@@ -149,3 +149,7 @@ firmware, power, reserved-memory and display inputs. The [sheng record](/devices
 contains its GPU hardware results; its device profile also selects its UFS,
 touch and HID implementations. Check those components' board dependencies when
 reusing them. Use the [migration guide](/porting/migration) for an existing port.
+
+## SM8750 community profile
+
+[UniXNU-sm8750-common](https://github.com/IssacL04/UniXNU-sm8750-common) supplies the GIC, timer, GCC/UFS and SMMU resources extracted from the OnePlus 13T port. The [device repository](https://github.com/IssacL04/UniXNU-Pagani_SM8750) pins the profile and keeps RAM selection, the `unixnu` partition, firmware handoff and power policy. Only CPU affinity 0 is described. The extracted profile still requires a fresh hardware boot; the earlier device build reached the iPadOS UI with CPU presentation and volatile RAM Data. Read its `porting.toml` before reusing any resource on another board.

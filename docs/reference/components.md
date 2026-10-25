@@ -75,3 +75,9 @@ identity and selection. Check the remote and revision before editing a feed.
 The [migration table](/porting/migration#component-names) lists accepted names.
 Source filenames and runtime identifiers keep the values used by their ABI.
 For example, the `AdrenoMetal` component stages `NativeAdrenoMetal` plugin files.
+
+## OnePlus 13T community bundle
+
+The maintained fork registers the OnePlus 13T implementations from one pinned `IssacL04/UniXNU-Pagani-Drivers` repository. `PaganiArmCpu`, `PaganiArmDTPlatform`, `PaganiDarwinBoot` and `PaganiVerifiedRoot` distinguish the community sources from official components; their runtime identifiers stay unchanged. Other community IDs retain their existing names. The device provides the bundle paths through a single gitlink and relative module links. `Sm8750Platform` comes from the selected SoC repository.
+
+The iPadOS 21H461 `pagani-series` selects the bundle's NativePrelink patches. Its four userspace byte fixups use the common OS profile and validated-page implementation. CPU framebuffer output does not imply touch, Adreno 830 or persistent storage support. Source pins, ABI inputs and evidence are recorded in the device's `porting.toml`.

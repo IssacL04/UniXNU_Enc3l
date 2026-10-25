@@ -69,3 +69,9 @@ include = ["ArmDTPlatform", "ArmCpu", "Adreno740", "AdrenoMetal", "GopFramebuffe
 
 [迁移名称表](/zh/porting/migration#组件名称)列出兼容输入。源文件名和运行时标识符
 保持 ABI 使用的值。例如，`AdrenoMetal` 组件发布 `NativeAdrenoMetal` 插件文件。
+
+## OnePlus 13T 社区组件集合
+
+维护用 fork 从同一个固定版本的 `IssacL04/UniXNU-Pagani-Drivers` 仓库登记 13T 组件。`PaganiArmCpu`、`PaganiArmDTPlatform`、`PaganiDarwinBoot` 和 `PaganiVerifiedRoot` 用于区分社区实现与官方组件，运行时标识保持原样；其余社区 ID 沿用现有名称。设备仓库通过一个 gitlink 和相对模块链接提供源码。`Sm8750Platform` 来自所选 SoC 仓库。
+
+iPadOS 21H461 的 `pagani-series` 选择集合中的 NativePrelink 补丁。四项用户态字节修正采用公共 OS 配置和签名验证后的页修正实现。CPU 帧缓冲输出不代表已支持触摸、Adreno 830 或持久存储；具体源码版本、ABI 输入和证据见设备 `porting.toml`。

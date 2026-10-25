@@ -133,3 +133,7 @@ Adreno740 和 AdrenoMetal 覆盖 A740/SM8550 接口。每块板型提供自己�
 保留内存和显示输入。[sheng 记录](/zh/devices/sheng)包含该设备的 GPU 实机结果；
 其设备配置还选择了相应 UFS、触控和 HID 实现。复用时检查这些组件的板级依赖。
 已有移植按[迁移指南](/zh/porting/migration)操作。
+
+## SM8750 社区配置
+
+[UniXNU-sm8750-common](https://github.com/IssacL04/UniXNU-sm8750-common) 收录从 OnePlus 13T 移植中拆出的 GIC、定时器、GCC/UFS 和 SMMU 资源。[设备仓库](https://github.com/IssacL04/UniXNU-Pagani_SM8750) 固定公共层版本，并保留 RAM 选择、`unixnu` 分区、固件交接和电源策略。目前只描述 CPU affinity 0。原先版本已通过 CPU 呈现和临时 RAM Data 进入 iPadOS 界面；拆分后的配置仍需重新进行真机启动验证。复用到其他设备前，先核对其 `porting.toml` 和本机资源。
