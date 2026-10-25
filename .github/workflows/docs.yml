@@ -35,11 +35,14 @@ jobs:
       - run: npm run build
         working-directory: docs
       - uses: actions/configure-pages@v5
+        if: github.repository == 'UniXNU/UniXNU'
       - uses: actions/upload-pages-artifact@v3
+        if: github.repository == 'UniXNU/UniXNU'
         with:
           path: docs/.vitepress/dist
 
   deploy:
+    if: github.repository == 'UniXNU/UniXNU'
     needs: build
     runs-on: ubuntu-latest
     environment:
