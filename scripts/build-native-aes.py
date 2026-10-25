@@ -17,4 +17,5 @@ command = compile_command(record, root / 'drivers/NativeAES/NativeAES.cpp', obj)
 subprocess.run(command, cwd=record['directory'], check=True)
 if struct.unpack('<4I', obj.read_bytes()[:16]) != (0xfeedfacf, 0x100000c, 0, 1):
     raise SystemExit('NativeAES: expected ordinary ARM64 Mach-O object')
-subprocess.run(['python3', root / 'scripts/build-native-aes-bindings.py'], check=True)
+subprocess.run(['python3', root / 'scripts/build-software-aes-bindings.py', '--objects-dir', out], check=True)
+(out / 'libSoftwareAES.a').replace(out / 'libNativeAES.a')

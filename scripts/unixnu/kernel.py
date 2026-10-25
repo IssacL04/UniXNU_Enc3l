@@ -123,6 +123,9 @@ def build_archives(ctx, env):
     if not ctx.need_config().get('XNU_BUILD_ARCHIVES'):
         return
     env = dict(env, PATH=toolchain_path(env.get('PATH')))
+    prelink = ctx.board.get('kernel', {}).get('prelink', {}).get('tool')
+    if prelink:
+        env['PYTHONPATH'] = os.pathsep.join([str((ctx.tree / prelink).parent), env.get('PYTHONPATH', '')])
     for index, (kind, entry) in enumerate(archive_plan(ctx), 1):
         if kind == 'component':
             spec = entry
