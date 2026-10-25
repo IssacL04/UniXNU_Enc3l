@@ -7,6 +7,20 @@ from pathlib import Path
 import struct
 import subprocess
 
+
+def c_command(command):
+    arguments=iter(command);result=[]
+    for value in arguments:
+        if value=='-x':
+            next(arguments)
+        elif value not in ('-fapple-kext','-fno-rtti','-fno-exceptions','-fno-threadsafe-statics',
+                           '-fcxx-modules','-fvisibility-inlines-hidden','-fsized-deallocation',
+                           '-fno-c++-static-destructors') and not value.startswith(('-x','-std=','-stdlib=','--driver-mode=')):
+            result.append(value)
+    result[1:1]=['--driver-mode=gcc','-x','c','-std=gnu11']
+    return result
+
+
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('component', choices=['NativeLegacyDisplay', 'NativeKeyStoreEvents', 'Stage7Probe', 'PaganiInput', 'PaganiS3910', 'PaganiGeniSpi', 'PaganiPanel'])
@@ -33,13 +47,7 @@ for value in arguments:
     elif not value.startswith('-W'):
         command.append(value)
 if source.suffix == '.c':
-    arguments=iter(command);command=[]
-    for value in arguments:
-        if value=='-x':
-            next(arguments)
-        elif value not in ('-fapple-kext','-fno-rtti','-fno-exceptions','-fno-threadsafe-statics','-fcxx-modules','-fvisibility-inlines-hidden') and not value.startswith(('-std=','-stdlib=')):
-            command.append(value)
-    command[1:1]=['-x','c','-std=gnu11']
+    command=c_command(command)
 command += ['-mgeneral-regs-only', '-Wall', '-Wextra', '-Werror', '-Wno-unused-parameter',
             '-Wno-c99-designator', '-Wno-reorder-init-list', '-Wno-deprecated-enum-enum-conversion',
             '-I', str(directory), '-I', str(root / '.cache/xnu-work/osfmk')]
