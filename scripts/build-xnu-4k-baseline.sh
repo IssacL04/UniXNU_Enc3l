@@ -724,7 +724,7 @@ first, second = [record['bindings'] for record in records]
 if any(first.get(name) != value for name, value in second.items()):
     raise SystemExit('RAM transport imports must match the already linked original storage bindings')
 PY_BINDINGS
-      RAM_BLOCK_OBJECT=$ROOT/build/ram-block/NativeRamBlock.o
+      RAM_BLOCK_OBJECT=${RAM_BLOCK_ARCHIVE%/*}/NativeRamBlock.o
       test -f "$RAM_BLOCK_OBJECT"
       KERNEL_EXTRA_ARCHIVES="$KERNEL_EXTRA_ARCHIVES $RAM_BLOCK_OBJECT"
     else
@@ -770,7 +770,7 @@ fi
 python3 - "${XNU_NATIVE_AES:-0}" "${XNU_NATIVE_AES_ARCHIVE:-$ROOT/build/software-aes/libSoftwareAES.a}" \
   "${XNU_NATIVE_VIRTIO_BLOCK:-0}" "${XNU_NATIVE_VIRTIO_BLOCK_ARCHIVE:-$ROOT/build/virtio-mmio-block/libVirtioMmioBlock.a}" \
   "$OWNER_ROOT_PROBE" "${XNU_VERIFIED_ROOT_ARCHIVE:-$ROOT/build/verified-root-xnu/libVerifiedRootProbe.a}" \
-  "$NATIVE_RAM_BLOCK" "$ROOT/build/ram-block/libRamBlock.a" \
+  "$NATIVE_RAM_BLOCK" "${XNU_NATIVE_RAM_BLOCK_ARCHIVE:-$ROOT/build/ram-block/libRamBlock.a}" \
   "$ADRENO_FIRMWARE_PROBE" "$ROOT/build/adreno-firmware-probe/libAdrenoFirmwareProbe.a" \
   "$ADRENO_PM4_PROBE" "$ROOT/build/adreno-pm4-probe/libAdrenoPM4Probe.a" \
   "$SMMU4K_PROBE" "$ROOT/build/smmu4k-probe/libArmSmmu4KProbe.a" \
