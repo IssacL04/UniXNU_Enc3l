@@ -9,12 +9,16 @@ import subprocess
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('component', choices=['NativeLegacyDisplay', 'NativeKeyStoreEvents', 'Stage7Probe'])
+parser.add_argument('component', choices=['NativeLegacyDisplay', 'NativeKeyStoreEvents', 'Stage7Probe', 'PaganiInput', 'PaganiS3910', 'PaganiGeniSpi', 'PaganiPanel'])
 component = parser.parse_args().component
 directory = root / 'build' / ('native-keystore-events' if component == 'NativeKeyStoreEvents' else 'native-legacy-display')
+if component.startswith('Pagani'):
+    directory = root / 'build/pagani-peripherals'
 directory.mkdir(parents=True, exist_ok=True)
 source = (root / 'drivers/Stage7Probe/Stage7Probe.cpp' if component == 'Stage7Probe' else
           root / 'drivers' / ('NativeMobileDisplay' if component == 'NativeLegacyDisplay' else component) / (component + '.cpp'))
+if component in ('PaganiS3910','PaganiGeniSpi'):
+    source = root / ('drivers/PaganiInput/S3910.c' if component=='PaganiS3910' else 'drivers/QcomGeniSpi/GeniSpi.c')
 record = json.loads((root / 'build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/iokit/DEVELOPMENT/IOPlatformExpert.cpo.json').read_text().strip().rstrip(','))
 obj = directory / (component + '.o')
 compile_command = runpy.run_path(str(root / 'scripts/build-arm-platform.py'))['compile_command']
@@ -28,9 +32,20 @@ for value in arguments:
             command += [value, option]
     elif not value.startswith('-W'):
         command.append(value)
+if source.suffix == '.c':
+    arguments=iter(command);command=[]
+    for value in arguments:
+        if value=='-x':
+            next(arguments)
+        elif value not in ('-fapple-kext','-fno-rtti','-fno-exceptions','-fno-threadsafe-statics','-fcxx-modules','-fvisibility-inlines-hidden') and not value.startswith(('-std=','-stdlib=')):
+            command.append(value)
+    command[1:1]=['-x','c','-std=gnu11']
 command += ['-mgeneral-regs-only', '-Wall', '-Wextra', '-Werror', '-Wno-unused-parameter',
             '-Wno-c99-designator', '-Wno-reorder-init-list', '-Wno-deprecated-enum-enum-conversion',
             '-I', str(directory), '-I', str(root / '.cache/xnu-work/osfmk')]
+if component.startswith('Pagani'):
+    command += ['-I', str(root / 'kits/Sm8750Platform'), '-I', str(root / 'kits/oneplus13t'),
+                '-I', str(root / 'drivers/QcomGeniSpi')]
 subprocess.run(command, cwd=record['directory'], check=True)
 data = obj.read_bytes()
 assert struct.unpack_from('<4I', data) == (0xfeedfacf, 0x100000c, 0, 1), 'Require ARM64 Mach-O object'

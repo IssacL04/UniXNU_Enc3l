@@ -201,6 +201,9 @@ for component in ('Stage7Probe','NativeKeyStoreEvents'):
                 'Keystore late registration leaves instructions unchanged')
         objects.append(staged)
     else:objects.append(source_obj)
+print(run(['python3',ROOT/'scripts/build-pagani-peripherals.py','--kernelcache',args.kernelcache],text=True),end='')
+peripherals=ROOT/'build/pagani-peripherals'
+objects += [peripherals/name for name in ('PaganiInput.late.o','PaganiPanel.late.o','PaganiS3910.o','PaganiGeniSpi.o','peripheral-bindings.o')]
 archive=OUT/'libNativeLegacyDisplay.late.a';archive.unlink(missing_ok=True)
 run(['xcrun','ar','rcs',archive,*objects])
 sources=[ROOT/'drivers/NativeMobileDisplay/NativeLegacyDisplay.cpp',
@@ -208,6 +211,10 @@ sources=[ROOT/'drivers/NativeMobileDisplay/NativeLegacyDisplay.cpp',
          ROOT/'drivers/NativeKeyStoreEvents/NativeKeyStoreEvents.cpp',
          ROOT/'drivers/Stage7Probe/Stage7Probe.cpp',Path(__file__),
          ROOT/'scripts/build-stage7-driver.py',ROOT/'scripts/original_stage7.py',ROOT/'scripts/audit-stage7-display.py']
+sources += [ROOT/'scripts/build-pagani-peripherals.py', ROOT/'kits/oneplus13t/PaganiPeripherals.h',
+            ROOT/'kits/Sm8750Platform/PeripheralIO.h', ROOT/'drivers/QcomGeniSpi/GeniSpi.c', ROOT/'drivers/QcomGeniSpi/GeniSpi.h']
+for folder in ('PaganiInput','PaganiPanel'):
+    sources += sorted(p for p in (ROOT/'drivers'/folder).iterdir() if p.suffix in ('.cpp','.c','.h'))
 (OUT/'build-report.json').write_text(json.dumps(dict(original_sha256=original.sha256,
     archive_sha256=sha(archive),source_sha256={str(p.relative_to(ROOT)):sha(p) for p in sources},
     virtual_entries=358,owned_entries=owned,bindings={n:hex(v) for n,v in bindings.items()},
