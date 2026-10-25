@@ -10,9 +10,11 @@ A community-maintained port for SM8750. Current results are based on the maintai
 
 The stage 7 run 39 record confirms root mounting and the system interface on hardware. Touch remains unavailable. Firmware, XNU, root and UI results apply to the recorded device configuration.
 
+Format-2 build 46 passed the kernel link and prelink. The matching UEFI, payload and boot image also built successfully on the host. The migrated image has not been booted on hardware; see the [migration and verification record](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/c27ed34c7c4d5192f18d851c1f879c01722a700f/MIGRATION.md).
+
 ## Sources
 
-- [README: IssacL04/UniXNU-Pagani_SM8750](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/9a6b057527429159a531f37c3af5b7235806caf1/README.md)
+- [README: IssacL04/UniXNU-Pagani_SM8750](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/c27ed34c7c4d5192f18d851c1f879c01722a700f/README.md)
 
 ## Dual-system storage
 

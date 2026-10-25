@@ -10,9 +10,11 @@
 
 阶段 7 第 39 次运行记录确认实机已挂载根卷并进入系统界面，触控待完成。固件、XNU、根卷和界面结果适用于记录中的设备配置。
 
+格式 2 第 46 轮已通过内核编译和预链接，配套 UEFI、payload 与启动镜像也已在主机上构建完成。新版镜像尚未进行真机启动，详见[迁移与验证记录](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/c27ed34c7c4d5192f18d851c1f879c01722a700f/MIGRATION.md)。
+
 ## 来源
 
-- [README: IssacL04/UniXNU-Pagani_SM8750](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/9a6b057527429159a531f37c3af5b7235806caf1/README.md)
+- [README: IssacL04/UniXNU-Pagani_SM8750](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/c27ed34c7c4d5192f18d851c1f879c01722a700f/README.md)
 
 ## 双系统存储
 
