@@ -510,3 +510,288 @@ runtime_identifiers = ["ShengPreflight"]
 build_stage = "firmware"
 build = []
 outputs = []
+
+[[component]]
+id = "BootProgress"
+kind = "driver"
+function = "BootProgress community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/BootProgress"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = ["BootProgress.c"]
+runtime_identifiers = ["BootProgress"]
+build_stage = "embedded"
+build = []
+outputs = []
+
+[[component]]
+id = "NativeAES"
+kind = "driver"
+function = "NativeAES community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/NativeAES"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = ["NativeAES.cpp"]
+runtime_identifiers = ["NativeAES"]
+build_stage = "kernel"
+build = ["build-native-aes.py"]
+outputs = ["build/native-aes/libNativeAES.a"]
+
+[[component]]
+id = "NativeKeyStoreEvents"
+kind = "driver"
+function = "NativeKeyStoreEvents community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/NativeKeyStoreEvents"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = ["NativeKeyStoreEvents.cpp"]
+runtime_identifiers = ["NativeKeyStoreEvents"]
+build_stage = "embedded"
+build = []
+outputs = []
+
+[[component]]
+id = "NativeMobileDisplay"
+kind = "driver"
+function = "CPU presentation through the iPadOS Legacy framebuffer ABI"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/NativeMobileDisplay"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = ["NativePrelink", "NativeKeyStoreEvents", "Stage7Probe"]
+source_files = ["NativeGOPPresenter.cpp", "NativeLegacyDisplay.cpp", "NativeMobileDisplay.cpp"]
+runtime_identifiers = ["NativeMobileDisplay"]
+build_stage = "kernel"
+build = ["build-stage7-display.py", "--kernelcache", "{out}/../../../ipsw/21H461/kernelcache.decompressed"]
+outputs = ["build/native-legacy-display/libNativeLegacyDisplay.late.a"]
+
+[[component]]
+id = "NativeRamBlock"
+kind = "driver"
+function = "NativeRamBlock community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/NativeRamBlock"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = ["PaganiVerifiedRoot"]
+source_files = ["NativeRamBlock.cpp"]
+runtime_identifiers = ["NativeRamBlock"]
+build_stage = "kernel"
+build = ["build-native-ufs.py", "--component", "NativeRamBlock", "--root-windows"]
+outputs = ["build/native-ram-block/libNativeRamBlock.a"]
+
+[[component]]
+id = "NativeUfs"
+kind = "driver"
+function = "Read-only SM8750 UFS root windows"
+scope = "sm8750"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/NativeUfs"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = ["Sm8750Platform", "PaganiVerifiedRoot"]
+source_files = ["NativeUfs.cpp"]
+runtime_identifiers = ["NativeUfs"]
+build_stage = "kernel"
+build = ["build-native-ufs.py", "--root-windows"]
+outputs = ["build/native-ufs/libNativeUfs.a"]
+
+[[component]]
+id = "NativeVirtioBlock"
+kind = "driver"
+function = "NativeVirtioBlock community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/NativeVirtioBlock"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = ["PaganiVerifiedRoot"]
+source_files = ["NativeVirtioBlock.cpp"]
+runtime_identifiers = ["NativeVirtioBlock"]
+build_stage = "kernel"
+build = ["build-native-ufs.py", "--component", "NativeVirtioBlock", "--root-windows"]
+outputs = ["build/native-virtio-block/libNativeVirtioBlock.a"]
+
+[[component]]
+id = "PaganiArmCpu"
+kind = "driver"
+function = "PaganiArmCpu community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/PaganiArmCpu"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = ["PaganiArmDTPlatform"]
+source_files = ["ArmCpu.cpp"]
+runtime_identifiers = ["ArmCpu"]
+build_stage = "kernel"
+build = ["build-arm-platform.py"]
+outputs = ["build/armcpu/libArmCpu.a", "build/armdt-platform/libArmDTPlatform.a"]
+
+[[component]]
+id = "PaganiArmDTPlatform"
+kind = "driver"
+function = "PaganiArmDTPlatform community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/PaganiArmDTPlatform"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = ["ArmDTPlatform.cpp"]
+runtime_identifiers = ["ArmDTPlatform"]
+build_stage = "embedded"
+build = []
+outputs = []
+
+[[component]]
+id = "PaganiDarwinBoot"
+kind = "driver"
+function = "PaganiDarwinBoot community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/PaganiDarwinBoot"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = []
+runtime_identifiers = ["DarwinBoot"]
+build_stage = "firmware"
+build = []
+outputs = []
+
+[[component]]
+id = "ShengPlatformPower"
+kind = "driver"
+function = "ShengPlatformPower community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/ShengPlatformPower"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = ["NativePrelink"]
+source_files = ["ShengPlatformPower.cpp"]
+runtime_identifiers = ["ShengPlatformPower"]
+build_stage = "kernel"
+build = ["build-sheng-platform-power.py", "--kernelcache", "{out}/../../../ipsw/21H461/kernelcache.decompressed"]
+outputs = ["build/sheng-platform-power/libShengPlatformPower.a"]
+
+[[component]]
+id = "Stage7Probe"
+kind = "driver"
+function = "Stage7Probe community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "drivers/Stage7Probe"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = ["Stage7Probe.cpp"]
+runtime_identifiers = ["Stage7Probe"]
+build_stage = "embedded"
+build = []
+outputs = []
+
+[[component]]
+id = "NativePrelink"
+kind = "kit"
+function = "NativePrelink community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "kits/NativePrelink"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = []
+runtime_identifiers = ["NativePrelink"]
+build_stage = "prelink"
+build = []
+outputs = []
+
+[[component]]
+id = "PaganiVerifiedRoot"
+kind = "kit"
+function = "PaganiVerifiedRoot community implementation"
+scope = "community"
+repository = "https://github.com/IssacL04/UniXNU-Pagani-Drivers.git"
+revision = "d28b6f0ba603fc058fd535f1d51e82b7bbbf8009"
+path = "kits/PaganiVerifiedRoot"
+hardware = ["OnePlus 13T PKX110"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = []
+runtime_identifiers = ["VerifiedRoot"]
+build_stage = "embedded"
+build = []
+outputs = []
+
+[[component]]
+id = "Sm8750Platform"
+kind = "kit"
+function = "SM8750 GCC and SMMU register operations"
+scope = "sm8750"
+repository = "https://github.com/IssacL04/UniXNU-sm8750-common.git"
+revision = "895f2996e713d5e4d261b1cc6b3d24439638fdf8"
+path = "kits/Sm8750Platform"
+hardware = ["SM8750"]
+os_abi = ["ipados-17.7.11-21H461"]
+board_dependencies = ["See the OnePlus 13T porting record for inputs and verification limits"]
+verified_devices = []
+dependencies = []
+source_files = []
+runtime_identifiers = ["Sm8750Platform"]
+build_stage = "embedded"
+build = []
+outputs = []

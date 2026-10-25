@@ -71,30 +71,40 @@ if [ "$BOOTSTRAP" != 0 ] && [ "$BOOTSTRAP" != 1 ]; then
   exit 1
 fi
 BOOT_PROGRESS=${XNU_BOOT_PROGRESS:-0}
+EARLY_BOOT_PROGRESS=${XNU_EARLY_BOOT_PROGRESS:-0}
+if [ "$EARLY_BOOT_PROGRESS" != 0 ] && [ "$EARLY_BOOT_PROGRESS" != 1 ]; then
+  echo 'XNU_EARLY_BOOT_PROGRESS must be 0 or 1' >&2
+  exit 1
+fi
+if [ "$EARLY_BOOT_PROGRESS" = 1 ] && { [ "$BOOT_PROGRESS" != 1 ] || [ "${XNU_ARMCPU:-0}" != 1 ] || [ "${XNU_ARM_DT_PLATFORM:-0}" != 1 ]; }; then
+  echo 'Early boot progress requires BOOT_PROGRESS, ArmCpu and ArmDTPlatform' >&2
+  exit 1
+fi
 if [ "$BOOT_PROGRESS" != 0 ] && [ "$BOOT_PROGRESS" != 1 ]; then
   echo 'XNU_BOOT_PROGRESS must be 0 or 1' >&2
   exit 1
 fi
 if [ "$BOOT_PROGRESS" = 1 ]; then
-  if [ "${XNU_NATIVE_UFS:-0}" != 1 ] || [ "${XNU_OWNER_ROOT_AUDIT:-0}" != 1 ] || \
-     [ "${XNU_NATIVE_VIRTIO_BLOCK:-0}" != 1 ] || [ "${XNU_SOURCE_CORECRYPTO14:-0}" != 1 ]; then
+  if [ "$EARLY_BOOT_PROGRESS" != 1 ] && { [ "${XNU_NATIVE_UFS:-0}" != 1 ] || [ "${XNU_OWNER_ROOT_AUDIT:-0}" != 1 ] || \
+     [ "${XNU_NATIVE_VIRTIO_BLOCK:-0}" != 1 ] || [ "${XNU_SOURCE_CORECRYPTO14:-0}" != 1 ]; }; then
     echo 'Boot progress requires the audited UFS/owner-root, Virtio and source-corecrypto build' >&2
     exit 1
   fi
   python3 scripts/build-boot-progress.py
 fi
-python3 - "$BOOT_PROGRESS" <<'PY'
+python3 - "$BOOT_PROGRESS" "$EARLY_BOOT_PROGRESS" <<'PY'
 from pathlib import Path
 import hashlib, sys
 mode = sys.argv[1]
 out = Path('build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837')
 stamp = out / '.boot-progress-mode'
-identity = mode + ':' + (hashlib.sha256(Path('build/boot-progress/libBootProgress.a').read_bytes()).hexdigest() if mode == '1' else 'disabled')
+identity = mode + ':' + sys.argv[2] + ':' + (hashlib.sha256(Path('build/boot-progress/libBootProgress.a').read_bytes()).hexdigest() if mode == '1' else 'disabled')
 if not stamp.exists() or stamp.read_text() != identity:
-    for directory, names in [('osfmk', ['arm_init','startup','video_console','serial_console','sleh']),
+    for directory, names in [('osfmk', ['start','arm_init','startup','video_console','serial_console','sleh','debug','printf']),
                              ('bsd', ['bsd_init','kern_exec','kern_exit']), ('pexpert', ['pe_kprintf'])]:
         for name in names:
             (out / directory / 'DEVELOPMENT' / (name + '.o')).unlink(missing_ok=True)
+    (out / 'iokit/DEVELOPMENT/IOKitBSDInit.cpo').unlink(missing_ok=True)
     (out / 'mach.development.bcm2837.unstripped.noctf').unlink(missing_ok=True)
     out.mkdir(parents=True, exist_ok=True)
     stamp.write_text(identity)
@@ -540,10 +550,12 @@ if [ "$NATIVE_ARCH_TIMER" = 1 ] && [ "${XNU_ARMCPU:-0}" != 1 ]; then
   echo 'Architectural timer entry requires the actual ArmCpu interrupt provider' >&2
   exit 1
 fi
-EXTRA_MAKE_ARGS+=("start.o_SFLAGS_ADD=-DXNU_NATIVE_ARCH_TIMER=$NATIVE_ARCH_TIMER")
+EXTRA_MAKE_ARGS+=("start.o_SFLAGS_ADD=-DXNU_NATIVE_ARCH_TIMER=$NATIVE_ARCH_TIMER -DXNU_EARLY_BOOT_PROGRESS=$EARLY_BOOT_PROGRESS")
+EXTRA_CFLAGS="$EXTRA_CFLAGS -DXNU_NATIVE_ARCH_TIMER=$NATIVE_ARCH_TIMER"
 NATIVE_TIMER_STAMP=$ROOT/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/.native-arch-timer-mode
 if [ "$(cat "$NATIVE_TIMER_STAMP" 2>/dev/null || echo 0)" != "$NATIVE_ARCH_TIMER" ]; then
   rm -f "$ROOT/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/osfmk/DEVELOPMENT/start.o"
+  rm -f "$ROOT/build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/pexpert/DEVELOPMENT/pe_identify_machine.o"
   printf '%s\n' "$NATIVE_ARCH_TIMER" > "$NATIVE_TIMER_STAMP"
 fi
 NATIVE_PAN=${XNU_NATIVE_PAN:-0}
@@ -612,7 +624,7 @@ if [ "${XNU_SOURCE_CORECRYPTO14:-0}" = 1 ] && [ "$BOOTSTRAP" = 0 ]; then
     KERNEL_ARCHIVE_DEPENDENCIES="$KERNEL_ARCHIVE_DEPENDENCIES $ARMCPU_ARCHIVE"
   fi
   if [ "${XNU_NATIVE_UFS:-0}" = 1 ]; then
-    UFS_ARCHIVE=$ROOT/build/sheng-ufs/libShengUfs.a
+    UFS_ARCHIVE=${XNU_NATIVE_UFS_ARCHIVE:-$ROOT/build/sheng-ufs/libShengUfs.a}
     test -f "$UFS_ARCHIVE"
     KERNEL_EXTRA_ARCHIVES="$KERNEL_EXTRA_ARCHIVES -Wl,-force_load,$UFS_ARCHIVE"
     KERNEL_ARCHIVE_DEPENDENCIES="$KERNEL_ARCHIVE_DEPENDENCIES $UFS_ARCHIVE"
@@ -692,7 +704,7 @@ PY_GPU_BROKER
     KERNEL_ARCHIVE_DEPENDENCIES="$KERNEL_ARCHIVE_DEPENDENCIES $CONSOLE_ARCHIVE"
   fi
   if [ "$NATIVE_RAM_BLOCK" = 1 ]; then
-    RAM_BLOCK_ARCHIVE=$ROOT/build/ram-block/libRamBlock.a
+    RAM_BLOCK_ARCHIVE=${XNU_NATIVE_RAM_BLOCK_ARCHIVE:-$ROOT/build/ram-block/libRamBlock.a}
     test -f "$RAM_BLOCK_ARCHIVE"
     if [ "${XNU_NATIVE_VIRTIO_BLOCK:-0}" = 1 ]; then
       # Both transports import the same original class. Keep one exact alias
@@ -792,7 +804,7 @@ if not stamp.exists() or stamp.read_text() != identity:
     directory.mkdir(parents=True, exist_ok=True)
     stamp.write_text(identity)
 PY
-EXTRA_CFLAGS="$EXTRA_CFLAGS -DXNU_BOOT_PROGRESS=$BOOT_PROGRESS"
+EXTRA_CFLAGS="$EXTRA_CFLAGS -DXNU_BOOT_PROGRESS=$BOOT_PROGRESS -DXNU_EARLY_BOOT_PROGRESS=$EARLY_BOOT_PROGRESS"
 make -C .cache/xnu-work "${XNU_BUILD_TARGET:-build}" SDKROOT="${XNU_SDKROOT:-iphoneos}" ARCH_CONFIGS=ARM64 \
   MACHINE_CONFIGS=BCM2837 KERNEL_CONFIGS=DEVELOPMENT \
   ARCH_STRING_FOR_CURRENT_MACHINE_CONFIG=arm64 LARGE_MEMORY_DEFINE=-UARM_LARGE_MEMORY \

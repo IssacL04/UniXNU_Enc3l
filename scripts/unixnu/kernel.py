@@ -2,6 +2,8 @@
 import os
 import platform
 import shlex
+import shutil
+import struct
 from pathlib import Path
 
 from . import components, ipsw, patches
@@ -174,7 +176,7 @@ def build(ctx, modules):
         # skip the archive checks and link without the archives, so it stops at the link and only the records are
         # required of it.
         log('kernel: bootstrap pass for the compile records')
-        subprocess_env = {**env, 'XNU_BOOT_PROGRESS': '0', 'XNU_BOOTSTRAP': '1'}
+        subprocess_env = {**env, 'XNU_BOOT_PROGRESS': '0', 'XNU_EARLY_BOOT_PROGRESS': '0', 'XNU_BOOTSTRAP': '1'}
         try:
             run(['bash', script], cwd=ctx.tree, env=subprocess_env, log_file=ctx.logs / 'kernel-bootstrap.log')
         except Error:
@@ -187,6 +189,30 @@ def build(ctx, modules):
             log_file=ctx.logs / 'storage-headers.log')
     build_archives(ctx, env)
     run(['bash', script], cwd=ctx.tree, env=env, log_file=ctx.logs / 'kernel.log')
+
+
+def export_source(ctx):
+    """Publish the source kernel for boards bringing up XNU without a kernelcache."""
+    if ctx.board.get('kernel', {}).get('prelink'):
+        raise Error('source_only and [kernel.prelink] cannot be used together')
+    source = ctx.tree / 'build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/mach.development.bcm2837.unstripped.noctf'
+    if not source.is_file():
+        raise Error(f'source kernel not found: {source}')
+    with source.open('rb') as stream:
+        header = stream.read(32)
+    if len(header) != 32 or struct.unpack_from('<4I', header) != (0xfeedfacf, 0x100000c, 0, 2):
+        raise Error('source kernel must be an ordinary ARM64 Mach-O executable')
+    output = ctx.work / 'kernel/kernel.macho'
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_suffix('.macho.tmp')
+    try:
+        shutil.copyfile(source, temporary)
+        temporary.replace(output)
+    finally:
+        temporary.unlink(missing_ok=True)
+    output.with_suffix('.json').unlink(missing_ok=True)  # A previous prelink report no longer describes this image.
+    log(f'kernel: {output} (source only; no prelinked Apple drivers or root filesystem)')
+    return output
 
 
 def prelink(ctx):

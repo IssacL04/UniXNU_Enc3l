@@ -37,6 +37,13 @@ def paths(ctx):
     return out, out / 'userdata-root.img', out / 'userdata-root.json'
 
 
+def target_partition(spec):
+    name = spec.get('partition', 'userdata')
+    if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9_]{1,35}', name):
+        raise Error('userdata.partition must be an exact GPT name of 1 to 35 ASCII letters, digits or underscores')
+    return name
+
+
 def image_size(dmg):
     if platform.system() != 'Darwin':
         return udif.Image(dmg).size
@@ -81,6 +88,7 @@ def build(ctx, dry_run=False):
     spec = ctx.board.get('userdata')
     if not spec:
         raise Error('board.toml has no [userdata]')
+    partition = target_partition(spec)
     if platform.system() == 'Darwin':
         tool('hdiutil', 'the disk images are attached with macOS hdiutil')
     source = Ipsw(ctx)
@@ -89,7 +97,7 @@ def build(ctx, dry_run=False):
         for window in spec['windows']:
             name, size, _ = source.info(window['component'])
             log(f'userdata: {window["name"]} would be extracted from {name} ({size >> 20} MiB)')
-        log('userdata: dry run, nothing extracted or written')
+        log(f'userdata: target partition {partition}, dry run, nothing extracted or written')
         return None
     sources = [(window['name'], source.extract(window['component'])) for window in spec['windows']]
     layout, cursor = [], MIB
@@ -131,7 +139,7 @@ def build(ctx, dry_run=False):
         target.write(header)
     data = {'image_bytes': total, 'image_sha256': sha256_file(image), 'manifest_sha256': hashlib.sha256(bytes(header)).hexdigest(),
             'windows': [{'name': n, 'offset': o, 'size': s, 'sha256': d.hex()} for n, o, s, d in entries],
-            'userdata_bytes': capacity, 'flash_command': f'fastboot flash userdata {image}',
+            'userdata_bytes': capacity, 'partition': partition, 'flash_command': f'fastboot flash {partition} {image}',
             'source': 'remote' if source.remote else 'local', 'hardware_tested': False}
     report.write_text(json.dumps(data, indent=2) + '\n')
     log(f'userdata: {image}')

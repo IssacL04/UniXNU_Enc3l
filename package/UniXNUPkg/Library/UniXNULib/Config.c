@@ -1583,11 +1583,23 @@ UniXNUConfigLoad (
     }
 
     if (AddFallbackLoaders (Config, ImageHandle) == 0) {
+      CHAR8  BootStatus[sizeof (Config->Notice)];
+      UINTN  BootStatusSize;
+
       //
       // Only the actions are left. Say so instead of showing a menu that
       // looks complete.
       //
       AsciiStrCpyS (Config->Notice, sizeof (Config->Notice), "no boot entry found");
+      BootStatusSize = sizeof (BootStatus);
+      Status = gRT->GetVariable (L"UniXNUBootStatus", &gUniXNUPkgTokenSpaceGuid,
+                      NULL, &BootStatusSize, BootStatus);
+      if (!EFI_ERROR (Status) && (BootStatusSize > 1) && (BootStatusSize <= sizeof (BootStatus)) &&
+          (BootStatus[BootStatusSize - 1] == '\0')) {
+        AsciiStrCpyS (Config->Notice, sizeof (Config->Notice), BootStatus);
+        Config->Timeout = -1; // Keep the platform failure visible when input is available.
+        Config->FallbackTimeout = 300;
+      }
       UniXNULog ("config: no boot entry found");
     }
 

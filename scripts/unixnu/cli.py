@@ -59,7 +59,7 @@ def parser():
     i = sub.add_parser('bootimg', parents=[c], help='pack the boot image from the firmware volume and a device tree')
     i.add_argument('--fd', metavar='FILE', help='firmware volume with UniXNU, DarwinBoot and payload filesystem support (default: build firmware output under --uefi)')
     i.add_argument('--dtb', metavar='FILE', help='compiled device tree; or UNIXNU_DTB')
-    i.add_argument('--ramdisk', metavar='FILE', help='ramdisk image, or none (default: the payload step output when present, else empty)')
+    i.add_argument('--ramdisk', metavar='FILE', help='payload image; placed inside the kernel when bootimg.embed_payload is true, otherwise in the ramdisk (default: payload output, else empty)')
     i.add_argument('-o', '--output', metavar='FILE', help='output (default: out/<device>/boot/boot.img)')
     w = sub.add_parser('ipsw', parents=[c], help='show or extract the components of the target IPSW')
     w.add_argument('action', choices=('info', 'fetch'))
@@ -152,7 +152,10 @@ def cmd_build(ctx):
     modules = prepare(ctx, steps + (['kernel'] if 'prelink' in steps else []))
     if 'kernel' in steps:
         kernel.build(ctx, modules)
-        kernel.prelink(ctx)
+        if ctx.board.get('kernel', {}).get('source_only', False):
+            kernel.export_source(ctx)
+        else:
+            kernel.prelink(ctx)
     elif 'prelink' in steps:
         kernel.prelink(ctx)
     if 'package' in steps:
@@ -174,9 +177,7 @@ def cmd_bootimg(ctx):
         ramdisk = expand(ctx.args.ramdisk)
     elif not ctx.args.ramdisk and payload.paths(ctx)[1].is_file():
         ramdisk = payload.paths(ctx)[1]
-        log(f'ramdisk: {ramdisk} (use --ramdisk none for an empty one)')
-    if ramdisk is None:
-        log('ramdisk: empty; build payload or pass --ramdisk FILE to include configured boot entries')
+        log(f'payload input: {ramdisk}')
     bootimg.build(ctx, uefi, fd, dtb, ramdisk, expand(ctx.args.output) if ctx.args.output else None)
 
 

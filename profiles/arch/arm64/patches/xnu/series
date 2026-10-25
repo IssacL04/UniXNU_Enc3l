@@ -15,6 +15,7 @@
 ../../../../../patches/xnu/native-4k-signature-hash-cache.patch
 ../../../../../patches/xnu/native-4k-user-abi.patch
 ../../../../../patches/xnu/native-aes-personality.patch
+../../../../../patches/xnu/native-arch-timer-frequency.patch
 ../../../../../patches/xnu/native-arm-pan.patch
 ../../../../../patches/xnu/native-dt-panic-region.patch
 ../../../../../patches/xnu/native-lookup-trace.patch

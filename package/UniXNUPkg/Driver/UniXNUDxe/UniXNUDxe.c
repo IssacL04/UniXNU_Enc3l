@@ -226,7 +226,7 @@ UniXNUDxeEntry (
   }
 
   Status = gRT->SetVariable (EFI_BOOT_ORDER_VARIABLE_NAME, &gEfiGlobalVariableGuid, OPTION_ATTRIBUTES, Out * sizeof (UINT16), NewOrder);
-  DEBUG ((DEBUG_INFO, "UniXNUDxe: Boot%04x first in BootOrder: %r\n", Number, Status));
+  DEBUG ((DEBUG_WARN, "UniXNUDxe: Boot%04x first in BootOrder: %r\n", Number, Status));
 
   FreePool (NewOrder);
   if (Order != NULL) {

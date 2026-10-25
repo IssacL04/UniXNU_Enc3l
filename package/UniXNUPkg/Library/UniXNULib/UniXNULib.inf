@@ -50,6 +50,7 @@
   gFdtTableGuid                   ## SOMETIMES_CONSUMES ## SOMETIMES_PRODUCES
   gLinuxEfiInitrdMediaGuid        ## SOMETIMES_PRODUCES
   gUniXNUBlockSliceGuid        ## SOMETIMES_PRODUCES
+  gUniXNUPkgTokenSpaceGuid     ## SOMETIMES_CONSUMES ## Variable: UniXNUBootStatus
 
 [Protocols]
   gEfiAcpiTableProtocolGuid         ## SOMETIMES_CONSUMES
