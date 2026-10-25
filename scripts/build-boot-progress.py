@@ -20,7 +20,7 @@ def main():
     output = root / 'build/boot-progress'
     output.mkdir(parents=True, exist_ok=True)
     subprocess.run(['python3', root / 'scripts/prepare-boot-logo.py',
-                    root / '../../ipsw/21H461/applelogo@2732~ipad.im4p', output / 'BootLogo.h'], check=True)
+                    root / '../../../../ipsw/21H461/applelogo@2732~ipad.im4p', output / 'BootLogo.h'], check=True)
     source = root / 'drivers/BootProgress'
     obj = output / 'BootProgress.o'
     command = compile_command(record, source / 'BootProgress.c', obj)
