@@ -38,3 +38,9 @@ python3 scripts/dual_sys/partition.py inspect
 2. Build with that repository's commands. Use [Build and boot](/building) for common configuration.
 3. Follow the [bring-up order](/porting/bring-up) and save results through [log capture](/porting/log-capture).
 4. Update the [porting record](/porting/records) with the source revisions and last confirmed stage.
+
+## Format-2 migration record
+
+The record below is pinned by this maintained fork. It distinguishes the migrated implementation from the earlier build-39 hardware observation.
+
+<!--@include: ../.vitepress/records/oneplus13t.md-->

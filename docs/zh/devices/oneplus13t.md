@@ -38,3 +38,9 @@ python3 scripts/dual_sys/partition.py inspect
 2. 按该仓库的命令构建，通用配置见[构建与启动](/zh/building)。
 3. 按[启动验证顺序](/zh/porting/bring-up)逐项验证，通过[日志抓取](/zh/porting/log-capture)保存结果。
 4. 更新[移植记录](/zh/porting/records)，记录实际使用的源码版本及最后确认的阶段。
+
+## 格式 2 迁移记录
+
+以下记录由当前维护用 fork 固定版本，分别列出迁移后的实现状态和先前第 39 版的真机观察。
+
+<!--@include: ../../.vitepress/records/oneplus13t.zh.md-->
