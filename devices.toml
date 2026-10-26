@@ -8,4 +8,4 @@ revision = "516a780473a2ac59c8b438e132bb60204dda9e22"
 [[device]]
 name = "oneplus13t"
 repository = "IssacL04/UniXNU-Pagani_SM8750"
-revision = "c27ed34c7c4d5192f18d851c1f879c01722a700f"
+revision = "be18db0025fbde66ffd0a55302f9c1bc0fe3c122"
