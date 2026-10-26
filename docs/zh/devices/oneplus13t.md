@@ -6,7 +6,7 @@
 
 OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root and CPU display port; volatile RAM Data.
 
-源记录: [porting.toml](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/porting.toml), `5b449ebbe418e8cc42e133430c5594ad777ebb02`.
+源记录: [porting.toml](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/porting.toml), `b12cb5e7cb417a1d9ff4906c699b097a5e311d9c`.
 
 本页按设备记录自动生成。
 
@@ -49,6 +49,7 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 - Four profiles select 18 components. PaganiInput and PaganiPanel are embedded in the ABI-qualified display archive and depend on QcomGeniSpi plus Sm8750Platform. Build 48 passed the complete configuration checks, driver compilation, final kernel link and prelink. Its source pins are device e6435b2bda6e91431f3bc0c442d1ff9c47be1451, main 42ffa07e9b82f7ffc37499392b2751e146647a6a, drivers 143e958bea8ae8ad7f47723cd105a589084f913d and SoC 9e90b16861612c0251c453ccbf6cf10592ea87e2.
 - The documentation workflow checks out pinned driver submodules so repository-relative evidence links resolve during validation. Current pins include the UFS completion recheck. Build 49 passed cloud regressions, full kernel link and prelink; its matching boot image passed local assembly and readback. Build-49 hardware feedback is recorded below.
 - Official UniXNU ae68700 is merged with the maintained 13T catalog. The J120AP/product-id identity and all selected XNU patches pass the updated format-2 contract. Build 49 was temporarily booted; the user reported no repeat panic during the observed test. Build 50 includes Setup completion preferences, upstream HID collection ordering and retained peripheral diagnostics. Cloud compilation, original/compiled ABI checks, full link/prelink and matching image readback passed; fastboot accepted the temporary boot, with runtime feedback pending.
+- Build-50 hardware feedback confirms the lock screen after skipping Setup and working short/long power-key actions. Touch failed during TouchComm startup. Build 51 corrects SPI read bytes, detects v1/v2 and retains detailed protocol diagnostics below the camera cutout. Portable and cloud regressions, full compilation/link/prelink and matching image readback passed; fastboot accepted the temporary boot, with touch behavior awaiting observation.
 
 ### 完成条件
 
@@ -60,22 +61,24 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 ### 下一步
 
-- Observe build 50 after the accepted temporary boot; record SpringBoard entry and all three peripheral status rows.
+- Capture touch behavior and the unobscured protocol status from build 51 on hardware.
 
 ### 证据
 
-- `host`: [Build 50 passed all 18 component contracts, full kernel compilation/link/prelink, matching image assembly and actual payload readback. Sending and Booting returned OKAY; system UI and peripheral behavior await observation.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `host`: [Build 51 passed all 18 component contracts, full C/C++ compilation, kernel link/prelink and matching image readback. Sending and Booting returned OKAY; touch behavior awaits observation.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
+  Command: <code>Actions build 51; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `9d9726f53038aa5d090dd13502064de9b4c94128`.
+- `host`: [Build 50 passed all 18 component contracts, full kernel compilation/link/prelink, matching image assembly and actual payload readback. Sending and Booting returned OKAY; system UI and peripheral behavior await observation.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>Actions build 50; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `1e98cc4c10c86904d7cafc6cb98dc4a29538628d`.
-- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot stage7-run-49/boot.img; user observation</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
-- `host`: [Build 49 passed configuration, UFS regressions, complete kernel link/prelink and matching boot-image assembly/readback. The UFS completion recheck is included; hardware retest remains pending.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `host`: [Build 49 passed configuration, UFS regressions, complete kernel link/prelink and matching boot-image assembly/readback. The UFS completion recheck is included; hardware retest remains pending.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>test-format2.py; test-stage6.py; ./unixnu kernel -j 3; ./unixnu payload; ./unixnu bootimg; FAT readback</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
 - `host`: [All 18 selected components resolved at their pinned revisions; archive ordering, ADT checks, full kernel link and prelink passed. Downloaded kernel and report agree at 127778816 bytes; hardware remains untested.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40183635568)
   Command: <code>test-format2.py; ./unixnu status --json; ./unixnu kernel -j 3</code>. Revision: `e6435b2bda6e91431f3bc0c442d1ff9c47be1451`.
 - `host`: [Four layers, 15 pinned components, complete archive order and matching required ADT properties passed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40174199304)
   Command: <code>test-format2.py; ./unixnu status --json</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 ## 固件与启动 {#firmware}
 
@@ -111,16 +114,18 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 ### 下一步
 
-- Temporarily boot the exact migrated image only after separate authorization; record its image/source revisions and compare the affected runtime checkpoints with build 39.
+- Observe build 51 after the authorized temporary boot; keep the build-50 image as the lock-screen and power-key baseline.
 
 ### 证据
 
-- `host`: [Build 50 reused the unchanged UEFI and passed Android v4, empty ramdisk, embedded FD/FAT and stock DTB packaging checks. fastboot boot returned OKAY without flashing a partition; this is not a runtime qualification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `host`: [Build 51 reused the unchanged UEFI and passed Android v4, empty ramdisk and embedded FD/FAT checks. The verified image was temporarily booted without flashing a partition.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
+  Command: <code>Actions build 51; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `9d9726f53038aa5d090dd13502064de9b4c94128`.
+- `host`: [Build 50 reused the unchanged UEFI and passed Android v4, empty ramdisk, embedded FD/FAT and stock DTB packaging checks. fastboot boot returned OKAY without flashing a partition; this is not a runtime qualification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>Actions build 50; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `1e98cc4c10c86904d7cafc6cb98dc4a29538628d`.
-- `host`: [AARCH64 DEBUG package and 3145728-byte FD built locally, including UniXNURamDiskDxe and the retained embedded payload path; hardware boot remains untested.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/MIGRATION.md)
+- `host`: [AARCH64 DEBUG package and 3145728-byte FD built locally, including UniXNURamDiskDxe and the retained embedded payload path; hardware boot remains untested.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/MIGRATION.md)
   Command: <code>./unixnu build package; ./unixnu firmware</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 ## CPU 与中断 {#cpu}
 
@@ -161,8 +166,8 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 - `host`: [Eight source-kernel regressions and production ARM64 assembly checks passed; the enabled CPU0 code linked successfully. IRQ/IPI behavior was not tested on hardware.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40174199304)
   Command: <code>test-kernel-source.py; test-stage6.py; ./unixnu kernel -j 3</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 ## 内存与 DMA {#memory}
 
@@ -203,8 +208,8 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 - `host`: [DTS/ADT memory and GIC contracts and RAMBlock handoff address bounds passed on the host. DMA behavior was not tested on hardware.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40174199304)
   Command: <code>test-format2.py; test-stage6.py</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 ## 存储与根卷 {#storage}
 
@@ -229,6 +234,7 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 - The physical root is unixnu on LUN 0, 4096-byte LBAs 44928768..61705983; runtime UFS writes are disabled.
 - Read-only OS/SystemOS windows use the original APFS/AMFI path. Data is a 1 GiB RAM seed and loses changes on reboot. Virtio is an ABI dependency, not tested 13T hardware. The RAMBlock addon query is synchronized with upstream RamBlock 25c57e0e9b68bf452dd1986914525edc9d2320bc for the shared kernel ABI; missing and invalid handoff ranges are checked on the host. No GPU addon is packaged. Build 48 reached the UI before a read timeout: one busy sample consumed about 1.54 seconds against a 1-second deadline; the subsequent snapshot had DB=0, OCS=0 and a response UPIU. The poller now samples completion once more after expiry. Regression tests reproduce the old false timeout and pass with the fix; Build-49 hardware feedback is recorded below.
 - Build 49 was temporarily booted and the user reported no recurring panic during this observation; duration and sustained-load coverage were not supplied. Build 50 merges the five upstream skip-Setup preference groups while mounted. Independent APFS readback confirmed their values, mobile ownership and 0600 modes, and the packed image logical hash passed. seed.json records setup\_skipped=true; the original OS/SystemOS inputs remain read-only.
+- The build-50 photo confirms lock-screen entry with the pre-seeded Setup preferences. Data remains volatile; this observation does not qualify persistent writes or long-term UFS stability.
 
 ### 完成条件
 
@@ -242,22 +248,24 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 ### 下一步
 
-- Verify SpringBoard entry and continued UFS reads during the build-50 temporary boot; the cloud-generated RAM Data seed has passed independent readback.
+- Keep the verified skip-Setup seed preparation and observe continued root reads during the touch retest.
 
 ### 证据
 
-- `host`: [Build 50 passed UFS regressions and full kernel compilation. Independent APFS readback confirmed all five skip-Setup preference groups, migration, UID/GID 501 and 0600 modes; packed Data logical hash, kernel UUID and embedded seed matched.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `host`: [Build 51 passed UFS regressions; APFS readback confirmed the five skip-Setup preference groups, migration, UID/GID 501 and 0600 modes. Packed Data logical hash, kernel Data UUID and embedded seed matched; no persistent writes were enabled.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
+  Command: <code>Actions build 51; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `9d9726f53038aa5d090dd13502064de9b4c94128`.
+- `host`: [Build 50 passed UFS regressions and full kernel compilation. Independent APFS readback confirmed all five skip-Setup preference groups, migration, UID/GID 501 and 0600 modes; packed Data logical hash, kernel UUID and embedded seed matched.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>Actions build 50; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `1e98cc4c10c86904d7cafc6cb98dc4a29538628d`.
-- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot stage7-run-49/boot.img; user observation</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
-- `host`: [Build 49 passed configuration, UFS regressions, complete kernel link/prelink and matching boot-image assembly/readback. The UFS completion recheck is included; hardware retest remains pending.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `host`: [Build 49 passed configuration, UFS regressions, complete kernel link/prelink and matching boot-image assembly/readback. The UFS completion recheck is included; hardware retest remains pending.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>test-format2.py; test-stage6.py; ./unixnu kernel -j 3; ./unixnu payload; ./unixnu bootimg; FAT readback</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
-- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot out/oneplus13t/boot/stage7-run-48/boot.img</code>. Revision: `e6435b2bda6e91431f3bc0c442d1ff9c47be1451`.
 - `host`: [Read-only partition bounds, root-window contracts, RAM Data preparation and original storage ABI qualification passed; UFS, Virtio and RAMBlock linked successfully.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40174199304)
   Command: <code>test-stage6.py; test-root-audit.py; test-ram-data.py; ./unixnu kernel -j 3</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 ## 显示 {#display}
 
@@ -282,6 +290,7 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 - PaganiPanel derives from the genuine original AppleARMBacklight class with qualified 0x370 storage and 169 virtual entries. It sends DCS 0x51/0x28/0x29 through the command FIFO and stops after a transport failure. The controller setup, DSC and panel timing stay as handed off by firmware.
 - The 60 Hz software presentation timer pauses for logical display-off and resumes with a fresh deadline. Build 48 passed MMIO/timer tests, original and compiled-object ABI checks, full kernel link and prelink. PaganiPanel symbols are present in the downloaded kernel; Build-48 hardware testing reached the UI, but brightness and power-key control did not respond before a UFS timeout panic. Physical display control remains unverified.
 - Build-49 feedback still reports unusable brightness and short power-key control. Build 50 retains panel map/start failures, DSI command results and accepted brightness requests on screen, with a count of successful DSI commands. The complete display archive and compiled ABI checks passed; physical control awaits runtime feedback.
+- Build 50 shows the lock screen. The user confirmed short power presses switch the screen off/on and a long press opens the shutdown UI. PANEL reports DSI disabled \(e00002d8\); physical brightness remains unqualified. This iteration only changes the placement of diagnostic rows to clear the camera cutout.
 
 ### 完成条件
 
@@ -293,23 +302,25 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 ### 下一步
 
-- Read PANEL status from build 50, then distinguish DSI transport failures from absent CoreBrightness requests before changing panel programming.
+- Defer panel changes during the requested touch work. A later panel investigation should start from build 50 DSI disabled \(e00002d8\).
 
 ### 证据
 
-- `host`: [Build 50 passed display/status drawing regressions, C/C++ compilation, original and compiled backlight ABI checks, final kernel link/prelink and image readback. Physical brightness, blanking and the PANEL row await runtime observation.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `host`: [Build 51 passed diagnostic-row drawing and panic-protection tests, original/compiled backlight ABI checks and full kernel link/prelink. The status rows moved below the camera; no new hardware brightness result is claimed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
+  Command: <code>Actions build 51; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `9d9726f53038aa5d090dd13502064de9b4c94128`.
+- `host`: [Build 50 passed display/status drawing regressions, C/C++ compilation, original and compiled backlight ABI checks, final kernel link/prelink and image readback. Physical brightness, blanking and the PANEL row await runtime observation.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>Actions build 50; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `1e98cc4c10c86904d7cafc6cb98dc4a29538628d`.
-- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot stage7-run-49/boot.img; user observation</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
-- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot out/oneplus13t/boot/stage7-run-48/boot.img</code>. Revision: `e6435b2bda6e91431f3bc0c442d1ff9c47be1451`.
 - `host`: [Display timer and DSI transport checks passed. The owned panel object passed the original/compiled ABI audit, entered the display archive and linked into the prelinked kernel; no hardware result claimed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40183635568)
   Command: <code>test-stage7.py; test-peripherals.py; ./unixnu kernel -j 3</code>. Revision: `e6435b2bda6e91431f3bc0c442d1ff9c47be1451`.
-- `source`: [DSI command transport, genuine backlight ancestry, timer PM integration and explicit runtime limits; not a complete-kernel or device result.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/drivers/PaganiPanel/README.md)
+- `source`: [DSI command transport, genuine backlight ancestry, timer PM integration and explicit runtime limits; not a complete-kernel or device result.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/drivers/PaganiPanel/README.md)
 - `host`: [Display lifecycle checks and original Legacy ABI qualification passed; the CPU presentation archive compiled and linked. The migrated framebuffer has not been observed on hardware.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40174199304)
   Command: <code>test-stage7.py; ./unixnu kernel -j 3</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 ## 输入 {#input}
 
@@ -335,6 +346,7 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 - The stock HBP driver exposes an LBP fallback through dynamic config 0x11=2. The new transport drains queued raw frames, installs and reads back a custom report format, filters palms and emits explicit releases with stable IDs. TouchComm CRC command suffixes are detected from identification.
 - PMIC reads are bounded and keys use 32 ms debounce. Failed key reads release all keys; touch transport failure releases held contacts and disables further touch reads. ATTN is polled at 8 ms, keys at 16 ms. Build 48 passed portable tests, the original 207-slot HID and compiled-object ABI audits, C/C++ compilation, final link and prelink. Input, S3910 and GENI SPI symbols are present in the downloaded kernel; build-48 hardware testing found touch and volume/power keys unresponsive. Initialization status and event routing still need runtime evidence.
 - Build-49 touch and keys remained unusable. Build 50 puts a keyboard application before the digitizer as in upstream NativeHidInput 5f3a37c; the physical report IDs and payload sizes remain unchanged. Retained status distinguishes HID resource/class/start failures, SPMI channel/subtype checks, SPI clock/firmware/setup, TouchComm startup and report submission.
+- Build 50 confirms power-key short/long actions and increasing key report counts for volume presses. Touch stops at TouchComm start with r=ffffffb9 and n=0; its raw value is obscured by the camera. Compared with OnePlus S3910 and data-a-live S3910P, build 51 sends 0xff during full-duplex reads, supports validated v1/v2 headers, v2 CRC/ACK/RETRY/fragments, a 100 ms reset wait and detailed retained diagnostics. Host tests, full kernel build and image readback passed. The matching image was temporarily booted; the hardware fault is not yet qualified as fixed.
 
 ### 完成条件
 
@@ -342,23 +354,27 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 ### 当前范围
 
-- Retained regulator and GENI firmware state is required. No RPMh cold rail enable, GIC IRQ path, GPI DMA, TouchComm v2, oversized-command fragmentation, firmware recovery or system-sleep wake. Hardware must confirm LBP availability, FIFO access, coordinates and event routing. System edge gestures are not implemented.
+- Retained regulator and GENI firmware state is required. No RPMh cold rail enable, GIC IRQ path, GPI DMA, v1 command fragmentation, firmware recovery or system-sleep wake. Hardware must confirm LBP availability, FIFO access, coordinates and event routing. System edge gestures are not implemented.
 
 ### 下一步
 
-- Record build-50 KEYS and TOUCH status at rest and during presses; use error stage, raw samples and successful report counts to locate the failed layer before changing rails or protocols.
+- Observe touch with build 51. If startup fails, record T0/T1/T2, command, stage, r and v before changing rails, FIFO mode or sensor configuration.
 
 ### 证据
 
-- `host`: [Build 50 passed actual HID descriptor parsing, TouchComm/contact/button/SPMI/GENI tests, C/C++ compilation and original/compiled HID ABI checks. The matching image was temporarily booted; touch/key response and KEYS/TOUCH rows await observation.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `host`: [Build 51 passed actual SPI read callback tests, v1/v2 protocol and contact/button/SPMI/GENI regressions, C/C++ compilation and original/compiled HID ABI checks. The matching image was temporarily booted; touch behavior and protocol status await observation.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
+  Command: <code>Actions build 51; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `9d9726f53038aa5d090dd13502064de9b4c94128`.
+- `device`: [Lock screen after skipping Setup; short power presses switch the screen off/on, long press opens shutdown UI. Volume presses advance the key-report counter. Touch has no response: TouchComm start r=ffffffb9, n=0, raw value hidden by camera.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
+  Command: <code>Build-50 temporary boot; photo and user observation</code>. Revision: `1e98cc4c10c86904d7cafc6cb98dc4a29538628d`.
+- `host`: [Build 50 passed actual HID descriptor parsing, TouchComm/contact/button/SPMI/GENI tests, C/C++ compilation and original/compiled HID ABI checks. The matching image was temporarily booted; touch/key response and KEYS/TOUCH rows await observation.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>Actions build 50; ./unixnu payload; ./unixnu bootimg; APFS/FAT readback</code>. Revision: `1e98cc4c10c86904d7cafc6cb98dc4a29538628d`.
-- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot stage7-run-49/boot.img; user observation</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
-- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot out/oneplus13t/boot/stage7-run-48/boot.img</code>. Revision: `e6435b2bda6e91431f3bc0c442d1ff9c47be1451`.
 - `host`: [TouchComm, contact lifecycle, key debounce/failure, SPMI and GENI tests passed. The HID object passed ABI checks and the S3910/GENI sources compiled as C; all three objects linked into the prelinked kernel. Hardware input remains untested.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40183635568)
   Command: <code>test-peripherals.py; test-stage7.py; ./unixnu kernel -j 3</code>. Revision: `e6435b2bda6e91431f3bc0c442d1ff9c47be1451`.
-- `source`: [Physical HID adapters, bounded TouchComm/SPMI paths, contact and key lifecycle tests; no hardware result claimed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/drivers/PaganiInput/README.md)
+- `source`: [Physical HID adapters, bounded TouchComm/SPMI paths, contact and key lifecycle tests; no hardware result claimed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/drivers/PaganiInput/README.md)
 
 ## GPU {#gpu}
 
@@ -510,8 +526,8 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 - `host`: [The PMGR builder qualified the pinned original imports/provider dispatch and linked its archive. Physical power transitions, battery and frequency control remain unverified.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40174199304)
   Command: <code>./unixnu kernel -j 3</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 ## 镜像组装 {#packaging}
 
@@ -553,18 +569,18 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 ### 证据
 
-- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot stage7-run-49/boot.img; user observation</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
-- `host`: [Build 49 passed configuration, UFS regressions, complete kernel link/prelink and matching boot-image assembly/readback. The UFS completion recheck is included; hardware retest remains pending.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `host`: [Build 49 passed configuration, UFS regressions, complete kernel link/prelink and matching boot-image assembly/readback. The UFS completion recheck is included; hardware retest remains pending.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>test-format2.py; test-stage6.py; ./unixnu kernel -j 3; ./unixnu payload; ./unixnu bootimg; FAT readback</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
-- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot out/oneplus13t/boot/stage7-run-48/boot.img</code>. Revision: `e6435b2bda6e91431f3bc0c442d1ff9c47be1451`.
-- `host`: [The build-48 boot image passed Android v4, embedded payload and stock-DTB round-trip checks. FAT readback matched the cloud kernel, trust cache and Data seed; all three pagani peripheral arguments and the 4 GiB DarwinBoot, root UUID and PackedRAMDisk/TrustCache handoff properties passed. Hardware remains untested.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/README.md)
+- `host`: [The build-48 boot image passed Android v4, embedded payload and stock-DTB round-trip checks. FAT readback matched the cloud kernel, trust cache and Data seed; all three pagani peripheral arguments and the 4 GiB DarwinBoot, root UUID and PackedRAMDisk/TrustCache handoff properties passed. Hardware remains untested.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/README.md)
   Command: <code>./unixnu payload; ./unixnu bootimg; mcopy FAT readback and input hash checks</code>. Revision: `fcab49e2ea2f9ddfaa08ee6e8109ba7ed67029ac`.
-- `host`: [Kernel/prelink, 160 MiB FAT payload and 87928832-byte Android v4 boot image succeeded. Extracted ADT and payload kernel hashes match the reports; no GPU addon is supplied.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/MIGRATION.md)
+- `host`: [Kernel/prelink, 160 MiB FAT payload and 87928832-byte Android v4 boot image succeeded. Extracted ADT and payload kernel hashes match the reports; no GPU addon is supplied.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/MIGRATION.md)
   Command: <code>./unixnu kernel -j 3; ./unixnu build package; ./unixnu firmware; ./unixnu payload; ./unixnu bootimg</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 ## 诊断 {#diagnostics}
 
@@ -604,13 +620,13 @@ OnePlus 13T PKX110: format-2 migration of the single-core, read-only UFS root an
 
 ### 证据
 
-- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Sending and Booting returned OKAY. The user reported no repeat panic during the test, while touch, volume/power keys and brightness remained unusable. Test duration was not specified; this does not qualify long-term stability or input.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot stage7-run-49/boot.img; user observation</code>. Revision: `be18db0025fbde66ffd0a55302f9c1bc0fe3c122`.
-- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `device`: [Build 48 briefly reached the UI. Touch, volume/power keys and brightness did not respond; a UFS read timed out after 297989 reads. The screenshot shows one busy sample, elapsed time beyond the deadline and a later completed DMA snapshot. No partition was flashed.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
   Command: <code>fastboot -s 3B15BB01BAT00000 boot out/oneplus13t/boot/stage7-run-48/boot.img</code>. Revision: `e6435b2bda6e91431f3bc0c442d1ff9c47be1451`.
 - `host`: [Source-kernel regressions, early console compilation and panic-entry contract passed in CI; runtime checkpoints still require a hardware boot.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/40174199304)
   Command: <code>test-kernel-source.py; drivers/BootProgress/Test/panic-entry.py</code>. Revision: `af2ba2975a5f0f6dcedfdcc719a1c646876f5804`.
-- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/board.toml)
-- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/5b449ebbe418e8cc42e133430c5594ad777ebb02/STAGE6.md)
+- `source`: [Current format-2 selection and board policy.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/board.toml)
+- `source`: [Historical PKX110 observations through build 39; no claim of migrated-image hardware verification.](https://github.com/IssacL04/UniXNU-Pagani_SM8750/blob/b12cb5e7cb417a1d9ff4906c699b097a5e311d9c/STAGE6.md)
 
 </div>
