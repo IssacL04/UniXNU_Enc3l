@@ -114,6 +114,16 @@ public:
         header += ' virtual ' + prototypes.get(i,f'void opaque{i}()') + ';\n'
     header += '};\nstatic_assert(sizeof(IOHIDDevice)==0xd0,"Original HID storage extent");\n'
     (OUT/'OriginalHidDeviceABI.h').write_text(header)
+    (OUT/'OriginalHidEventABI.h').write_text('''// SPDX-License-Identifier: BSD-2-Clause-Patent
+// Generated after qualifying the exact 21H461 event tables and field accesses.
+#pragma once
+#include <stdint.h>
+enum { PAGANI_HID_DRIVER_SLOTS=220 };
+extern "C" {
+extern uintptr_t pagani_original_hid_driver_vtable[];
+extern uintptr_t pagani_original_hid_event_vtable[];
+}
+''')
     (OUT/'OriginalBacklightABI.h').write_text('''// SPDX-License-Identifier: BSD-2-Clause-Patent
 // Opaque base storage and genuine metadata. The owned subclass uses IOService lifecycle.
 #pragma once
@@ -128,6 +138,31 @@ static_assert(sizeof(AppleARMBacklight)==0x370,"Original backlight storage exten
 ''')
 
 
+def qualify_events(original):
+    read=original.read
+    driver=original.pointers(0xfffffff005d06a68,220)
+    event=original.pointers(0xfffffff005d07318,37)
+    require(all(driver) and read(0xfffffff005d06a68-16,16)==bytes(16) and
+            read(0xfffffff005d06a68+220*8,24)==bytes(24), 'Original event-driver 220-slot table and prefix')
+    require(all(event) and read(0xfffffff005d07318+37*8,24)==bytes(24), 'Original event 37-slot table')
+    require(read(0xfffffff004af09bc,12).hex()=='a89000d008a12991080000f9' and
+            read(0xfffffff004afb130,12).hex()=='6890009008610c91080000f9', 'Original event-driver/event constructor vptr stores')
+    require(driver[198]==0xfffffff004aface8 and
+            read(driver[198],32).hex()=='f85fbca9f65701a9f44f02a9fd7b03a9fdc30091f30302aaf40301aaf50300aa',
+            'Original dispatchEvent takes self, event and options')
+    require(read(0xfffffff004afade4,44).hex()==
+            '489000f008013891032143f9e00315aae10314aae20313aafd7b43a9f44f42a9f65741a9f85fc4a860001fd6',
+            'Original dispatchEvent forwards the same arguments to its event-service base')
+    require([event[i] for i in (18,23,24,25)]==
+            [0xfffffff004afcf90,0xfffffff004afcfb8,0xfffffff004afefdc,0xfffffff004afe4c4] and
+            read(event[18],12).hex()=='080840f9000540b9c0035fd6', 'Original event type/integer/setter/fixed-value slots')
+    require(read(0xfffffff004afcf50,4).hex()=='600e00f9' and
+            read(0xfffffff004afb460,24).hex()=='600e40f9a00000b4080040f9081540f900013fd67f0e00f9',
+            'Original event children store and release at offset 24')
+    return {'_pagani_original_hid_driver_vtable':0xfffffff005d06a68,
+            '_pagani_original_hid_event_vtable':0xfffffff005d07318}
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--kernelcache',type=Path,required=True)
@@ -135,11 +170,11 @@ def main():
     args=parser.parse_args()
     original=OriginalImage(args.kernelcache)
     service,hid=qualify(original)
+    bindings=qualify_events(original)
     OUT.mkdir(parents=True,exist_ok=True);headers()
     if args.audit_only:
-        print('PASS: pinned original HID/backlight ABI; headers generated; no driver compilation')
+        print('PASS: pinned HID/backlight and event-dispatch ABI; headers generated; no driver compilation')
         return
-    bindings={}
     for classname,base,methods,count,expected in [
             ('PaganiInput','IOHIDDevice',hid,207,[0,1,7,14,86,87,111,171,173,180]),
             ('PaganiPanel','AppleARMBacklight',service,169,[0,1,7,14,21,44,86,87,111,168])]:
@@ -183,7 +218,8 @@ def main():
             return raw[sec['fileoff']:sec['fileoff']+sec['size']]
         require(text(obj)==text(late),'Late registration preserves compiled instructions')
     (OUT/'abi-audit.json').write_text(json.dumps(dict(original_sha256=original.sha256,
-        hid_slots=207,backlight_slots=169,bindings=bindings,runtime_qualified=False),indent=2)+'\n')
+        hid_slots=207,event_driver_slots=220,event_slots=37,backlight_slots=169,
+        bindings=bindings,runtime_qualified=False),indent=2)+'\n')
     print('PASS: owned physical-input/panel objects and exact original ABI bindings')
 
 
