@@ -88,6 +88,7 @@ for i in range(168,358):
     elif i==337:header+=' virtual IOReturn collectCompletionReports(uint32_t,void *,uint32_t *,uint32_t)=0;\n'
     elif i==288:header+=' virtual bool startHardware();\n'
     elif i==301:header+=' virtual bool getRefreshAttributes(uint64_t *,bool);\n'
+    elif i==345:header+=' virtual bool isTimingEnabled()=0;\n'
     elif i in pure:header+=f' virtual __attribute__((noreturn)) void opaque{i}()=0;\n'
     else:header+=f' virtual __attribute__((deprecated("Unclassified ABI: never call from source"))) void opaque{i}();\n'
 header+='};\nstatic_assert(sizeof(IOMobileFramebufferLegacy)==0x18a0,"Actual original instance extent");\n'
@@ -180,6 +181,15 @@ require(read(0xfffffff00578aa7c,24)==bytes.fromhex('080040f9084545f9030080d2e203
         'Original completion calls optional report slot 337 with null outputs and zero limit')
 require(read(0xfffffff005777e9c,16)==bytes.fromhex('080040f908e142f900013fd6c0000036'),
         'Original isMainDisplay dispatch uses only self and tests boolean bit zero')
+# Slot 345 receives only self and returns a boolean, also printed as TimingEnable
+# by swap_wait_gated after its five-second CommandWake timeout.
+require(read(0xfffffff00578b638,20)==bytes.fromhex('e00f40f9080040f9086545f900013fd6e0050036') and
+        read(0xfffffff00578b774,20)==bytes.fromhex('e00f40f9080040f9086545f900013fd680040036') and
+        read(0xfffffff00578c1c0,16)==bytes.fromhex('080040f9086545f900013fd6a88354f8') and
+        read(0xfffffff00578c21c,12)==bytes.fromhex('eb0300aa6b0140922b1900f9') and
+        read(0xfffffff00578c230,12)==bytes.fromhex('8073ff900030209130590094') and
+        b'TimingEnable = %d' in read(0xfffffff0045fc80c,180).split(b'\0')[0],
+        'Original slot-345 boolean calls and TimingEnable timeout diagnostic')
 asm=OUT/'original-bindings.S';asm.write_text(''.join(f'.globl {name}\n.set {name}, {va:#x}\n' for name,va in sorted(bindings.items())))
 sdk=run(['xcrun','--sdk','iphoneos','--show-sdk-path'],text=True).strip()
 run(['xcrun','clang','-target','arm64-apple-ios17.0','-isysroot',sdk,'-c',asm,'-o',OUT/'original-bindings.o'])
