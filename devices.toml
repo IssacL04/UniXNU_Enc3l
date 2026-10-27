@@ -1119,9 +1119,9 @@ title_zh = "一加 13T（oneplus13t）"
 format = 2
 legacy_page = "preserve"
 soc = "SM8750"
-summary = "OnePlus 13T PKX110: basic touch confirmed on build 57; build-63 display handoff and timing-query correction image passed readback and fastboot accepted its temporary launch; runtime feedback pending; eight-core candidate, 4 GiB RAM, read-only UFS root."
+summary = "OnePlus 13T PKX110: build 63 device-confirmed system startup and normal touch, CPU reg=8 online=8 T=ff I=ff, RAM 4096 MiB; Clutch single-pset, read-only UFS root; cross-core stress and long-term stability unqualified."
 repository_id = 1428468035
-revision = "ca6b54d220a39c71b489639a59c937aebcb6cd1c"
+revision = "e1436a2dd4c231f4c5184b6851a2c1192e56b012"
 board = "oneplus13t"
 os_profile = "ipados-17.7.11-21H461"
 components = ["BootProgress", "NativeAES", "NativeKeyStoreEvents", "NativeMobileDisplay", "NativeRamBlock", "NativeUfs", "NativeVirtioBlock", "PaganiArmCpu", "PaganiArmDTPlatform", "PaganiDarwinBoot", "ShengPlatformPower", "Stage7Probe", "NativePrelink", "PaganiVerifiedRoot", "Sm8750Platform", "PaganiInput", "PaganiPanel", "QcomGeniSpi"]
