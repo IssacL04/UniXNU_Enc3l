@@ -6,7 +6,7 @@
 
 Redmi K60 \(mondrian/SM8475\). Format 2 device: the kernel builds and prelinks, the payload and the boot image still need the board ADT and the hardware bring-up.
 
-Source record: [porting.toml](https://github.com/Emilelu/UniXNU-mondrian/blob/e3a95407c9345f0b2f09132b880d6b69ef8df0bd/porting.toml), `e3a95407c9345f0b2f09132b880d6b69ef8df0bd`.
+Source record: [porting.toml](https://github.com/Emilelu/UniXNU-mondrian/blob/7ba5e3a5ed97f16a13a021315de6fa6527006c2b/porting.toml), `7ba5e3a5ed97f16a13a021315de6fa6527006c2b`.
 
 This page is generated from the device record.
 
@@ -62,7 +62,7 @@ Components: `ArmDTPlatform`, `ArmCpu`, `XnuPrelink`.
 
 ### Evidence
 
-- `source`: [schema\_version = 2 resolves through the arch, SM8475, 20G81 and device layers; status reports three components and 83 ordered patches](https://github.com/Emilelu/UniXNU-mondrian/blob/e3a95407c9345f0b2f09132b880d6b69ef8df0bd/board.toml)
+- `source`: [schema\_version = 2 resolves through the arch, SM8475, 20G81 and device layers; status reports three components and 83 ordered patches](https://github.com/Emilelu/UniXNU-mondrian/blob/7ba5e3a5ed97f16a13a021315de6fa6527006c2b/board.toml)
 
 ## Firmware and boot {#firmware}
 
