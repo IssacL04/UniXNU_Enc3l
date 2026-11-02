@@ -87,7 +87,9 @@ subprocess.run(['xcrun', 'clang++', '-std=c++17', '-O1', '-g', '-fobjc-arc', '-W
 for mode in ('normal', 'single'):
     with tempfile.TemporaryDirectory(prefix='interfaces-' + mode + '-', dir=out) as directory:
         command = [interfaces, args.loader.resolve(), directory, mode]
-        env = dict(os.environ, NATIVE_METAL_ABORT_PROBE='1', NMB_LOG_STDERR='1')
+        # AppleParavirt faults on CPU writes to MoltenVK shared placement-heap textures.
+        env = dict(os.environ, NATIVE_METAL_ABORT_PROBE='1', NMB_LOG_STDERR='1',
+                   MVK_CONFIG_USE_MTLHEAP='0')
         result = subprocess.run(command, env=env,
                                 text=True, capture_output=True, timeout=180)
         (out / ('interfaces-' + mode + '.log')).write_text(result.stdout + result.stderr)
