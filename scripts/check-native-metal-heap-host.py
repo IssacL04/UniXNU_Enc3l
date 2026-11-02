@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -65,3 +66,29 @@ result = subprocess.run([scanout, args.loader.resolve(), cache], text=True, capt
 if result.returncode or 'PASS:' not in result.stdout:
     raise SystemExit('Scanout failed: ' + (result.stdout + result.stderr)[-6000:])
 print(result.stdout, end='')
+
+interfaces = out / 'interfaces'
+subprocess.run(['xcrun', 'clang++', '-std=c++17', '-O1', '-fobjc-arc', '-Wall', '-Wextra', '-Werror',
+                '-Wno-unused-parameter', '-Wno-deprecated-declarations', '-DNATIVE_ADRENO_SP_CORES=6', '-I', kit,
+                kit / 'NativeBridgeMetalFrontend.mm', kit / 'bridge/interface_regressions_host.mm',
+                root / 'build/adreno-metal-bridge/host/libadreno_metal_bridge.a',
+                '-framework', 'Foundation', '-framework', 'Metal', '-framework', 'IOSurface',
+                '-framework', 'CoreFoundation', '-o', interfaces], check=True)
+for mode in ('normal', 'single'):
+    with tempfile.TemporaryDirectory(prefix='interfaces-' + mode + '-', dir=out) as directory:
+        result = subprocess.run([interfaces, args.loader.resolve(), directory, mode],
+                                text=True, capture_output=True, timeout=180)
+        (out / ('interfaces-' + mode + '.log')).write_text(result.stdout + result.stderr)
+        if result.returncode or 'PASS:' not in result.stdout:
+            raise SystemExit('Metal interfaces failed: ' + (result.stdout + result.stderr)[-6000:])
+        print(result.stdout, end='')
+
+translator = root / '.cache/gpu-reference/metal2vulkan/Cargo.toml'
+for test in ('indexed_constant_tables_use_shared_storage_above_four_kib',
+             'specialized_names_resolve_exact_definitions_and_keys'):
+    result = subprocess.run(['cargo', '+1.98.0', 'test', '--manifest-path', translator, '-p', 'metal2vulkan',
+                             '--lib', test], text=True, capture_output=True, timeout=600)
+    (out / (test + '.log')).write_text(result.stdout + result.stderr)
+    if result.returncode or '1 passed' not in result.stdout:
+        raise SystemExit('Compiler regression failed: ' + (result.stdout + result.stderr)[-6000:])
+    print('PASS: compiler ' + test)

@@ -56,6 +56,7 @@
     "patches/mesa/turnip-host-import-images.patch",
     "patches/mesa/turnip-render-mode-for-attachment-memory.patch",
     "patches/mesa/turnip-gmem-mutable-swap.patch",
+    "patches/mesa/turnip-frame-diagnostics.patch",
     "patches/mesa/turnip-submit-backpressure.patch"
   ],
   "integer_fma_reference": {

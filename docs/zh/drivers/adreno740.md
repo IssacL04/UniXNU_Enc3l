@@ -152,3 +152,5 @@ python3 scripts/check-quartzcore-turnip-cache-host.py
 OnePlus 13T 的 Run 88 候选接入 GPU parity 分支的系统 BO、每进程页表和 Metal 缓冲区复用，保留 A830 的 SQE/AQE 与 Gen8 计数器差异。Metal 报告六个已配置 SP，板级通过原机 OPP 请求 389 MHz；实际活动核心数、频率和稳定 60 FPS 尚未验证。
 
 同步 main a9a2cbb 后保留上游 A740 双环抢占实现；A830 明确拒绝该抢占配置，继续使用 Gen8 六缓冲区上下文、SQE/AQE 映射、复位/页表包和计数器地址。iPadOS 17 头文件缺少 GPU-role API 时使用现有前台提交优先级回退；新版头文件保留上游角色策略。
+
+新增默认关闭的 GPU trace ABI，按固定容量保留命令、fence、内存导入、构建标识和带完成标记的像素采样。用户记录由内核写入调用者 PID，stage 3 扫描输出采样只接收内核来源。共享 ABI 与 AdrenoMetal、一加 NativeMobileDisplay presenter 做一致性检查。A830 保留单 ring 和 Gen8 初始化，诊断不会启用 A740 抢占策略。导出由一加设备包写入易失 RAM Data，UFS 驱动继续只读。
