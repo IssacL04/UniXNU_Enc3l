@@ -45,7 +45,9 @@ subprocess.run(['xcrun', 'clang++', *flags, KIT / 'NativeBridgeMetalFrontend.mm'
 for mode in ['normal', 'single']:
     with tempfile.TemporaryDirectory(prefix='interfaces-' + mode + '-', dir=OUT) as directory:
         command = [str(interfaces), loader, directory, mode]
-        run = subprocess.run(command, capture_output=True, text=True, timeout=120)
+        # Match the heap/scanout runner's AppleParavirt shared-texture workaround.
+        run = subprocess.run(command, env=dict(os.environ, MVK_CONFIG_USE_MTLHEAP='0'),
+                             capture_output=True, text=True, timeout=120)
         log = OUT / ('interfaces-' + mode + '.log')
         log.write_text(run.stdout + run.stderr)
         if run.returncode or not any(line.startswith('PASS:') for line in run.stdout.splitlines()):

@@ -55,3 +55,5 @@ main-3 基线集成 AdrenoMetal 831a9dc 及上游 24 个运行时补丁。首帧
 A830／iPadOS 17 候选现可让同 UID、具备写入权限的进程共享按版本区分的着色器缓存；共享目录不可用时继续使用容器缓存。导入临时文件使用进程和序列标识，避免并发覆盖。26 个运行时补丁加入函数专用链接名称、大型索引常量的共享存储和实际分配大小查询；前端补齐纹理通道重排视图、函数常量查询、描述符异步回调、mip／slice 范围复制、多 viewport／scissor 及命令队列容量。默认保留调用方请求的多重采样。
 
 可选帧诊断通过明确 ID 关联 Metal 命令、运行时／Vulkan 命令、内核 fence 和扫描输出请求。IOSurface 仅在命令成功完成后采样，并保留原始像素及色彩元数据；一加 presenter 另外采样已完成 GPU 拷贝的扫描输出映射。采集时开启 `sheng-gpu-trace=1 sheng-gpu-pixels=1`。上述新增路径已接入主机检查，实机效果和性能仍待验证。
+
+[OnePlus Metal run 8](https://github.com/IssacL04/UniXNU-Pagani_SM8750/actions/runs/41502995541) 已通过缓存／追踪／presenter 检查、两项编译器回归、heap 与 scanout 像素检查，以及 normal／single 两种接口测试。产物使用 run 5 重新完整编译的内核和 run 6 构建签名的 A830／iPadOS 17 用户态。主机接口测试关闭 MoltenVK placement heap，避免 AppleParavirt 在共享纹理 CPU 上传时崩溃；生产分配策略不变。
