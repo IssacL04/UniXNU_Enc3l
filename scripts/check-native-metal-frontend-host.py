@@ -49,7 +49,7 @@ for mode in ['normal', 'single']:
         log = OUT / ('interfaces-' + mode + '.log')
         log.write_text(run.stdout + run.stderr)
         if run.returncode or not any(line.startswith('PASS:') for line in run.stdout.splitlines()):
-            sys.exit('Metal interfaces %s failed; see %s' % (mode, log))
+            sys.exit('Metal interfaces %s failed (exit %d); see %s' % (mode, run.returncode, log))
         print(run.stdout, end='')
 # Qualify compatible original UI descriptors, actual repeated blur pixels and
 # independent cold archive versus driver-cache provisioning.

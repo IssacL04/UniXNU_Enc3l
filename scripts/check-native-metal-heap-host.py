@@ -67,22 +67,6 @@ if result.returncode or 'PASS:' not in result.stdout:
     raise SystemExit('Scanout failed: ' + (result.stdout + result.stderr)[-6000:])
 print(result.stdout, end='')
 
-interfaces = out / 'interfaces'
-subprocess.run(['xcrun', 'clang++', '-std=c++17', '-O1', '-fobjc-arc', '-Wall', '-Wextra', '-Werror',
-                '-Wno-unused-parameter', '-Wno-deprecated-declarations', '-DNATIVE_ADRENO_SP_CORES=6', '-I', kit,
-                kit / 'NativeBridgeMetalFrontend.mm', kit / 'bridge/interface_regressions_host.mm',
-                root / 'build/adreno-metal-bridge/host/libadreno_metal_bridge.a',
-                '-framework', 'Foundation', '-framework', 'Metal', '-framework', 'IOSurface',
-                '-framework', 'CoreFoundation', '-o', interfaces], check=True)
-for mode in ('normal', 'single'):
-    with tempfile.TemporaryDirectory(prefix='interfaces-' + mode + '-', dir=out) as directory:
-        result = subprocess.run([interfaces, args.loader.resolve(), directory, mode],
-                                text=True, capture_output=True, timeout=180)
-        (out / ('interfaces-' + mode + '.log')).write_text(result.stdout + result.stderr)
-        if result.returncode or 'PASS:' not in result.stdout:
-            raise SystemExit('Metal interfaces failed: ' + (result.stdout + result.stderr)[-6000:])
-        print(result.stdout, end='')
-
 translator = root / '.cache/gpu-reference/metal2vulkan/Cargo.toml'
 for test in ('indexed_constant_tables_use_shared_storage_above_four_kib',
              'specialized_names_resolve_exact_definitions_and_keys'):
@@ -92,3 +76,28 @@ for test in ('indexed_constant_tables_use_shared_storage_above_four_kib',
     if result.returncode or '1 passed' not in result.stdout:
         raise SystemExit('Compiler regression failed: ' + (result.stdout + result.stderr)[-6000:])
     print('PASS: compiler ' + test)
+
+interfaces = out / 'interfaces'
+subprocess.run(['xcrun', 'clang++', '-std=c++17', '-O1', '-g', '-fobjc-arc', '-Wall', '-Wextra', '-Werror',
+                '-Wno-unused-parameter', '-Wno-deprecated-declarations', '-DNATIVE_ADRENO_SP_CORES=6', '-I', kit,
+                kit / 'NativeBridgeMetalFrontend.mm', kit / 'bridge/interface_regressions_host.mm',
+                root / 'build/adreno-metal-bridge/host/libadreno_metal_bridge.a',
+                '-framework', 'Foundation', '-framework', 'Metal', '-framework', 'IOSurface',
+                '-framework', 'CoreFoundation', '-o', interfaces], check=True)
+for mode in ('normal', 'single'):
+    with tempfile.TemporaryDirectory(prefix='interfaces-' + mode + '-', dir=out) as directory:
+        command = [interfaces, args.loader.resolve(), directory, mode]
+        env = dict(os.environ, NATIVE_METAL_ABORT_PROBE='1', NMB_LOG_STDERR='1')
+        result = subprocess.run(command, env=env,
+                                text=True, capture_output=True, timeout=180)
+        (out / ('interfaces-' + mode + '.log')).write_text(result.stdout + result.stderr)
+        if result.returncode or 'PASS:' not in result.stdout:
+            print('Metal interfaces %s exited %d' % (mode, result.returncode), flush=True)
+            if result.returncode < 0:
+                debug = subprocess.run(['xcrun', 'lldb', '--batch', '--no-lldbinit', '-o', 'run',
+                                        '-k', 'thread backtrace all', '--', *command], env=env,
+                                       text=True, capture_output=True, timeout=120)
+                (out / ('interfaces-' + mode + '-crash.log')).write_text(debug.stdout + debug.stderr)
+                print((debug.stdout + debug.stderr)[-12000:], flush=True)
+            raise SystemExit('Metal interfaces failed: ' + (result.stdout + result.stderr)[-6000:])
+        print(result.stdout, end='')
