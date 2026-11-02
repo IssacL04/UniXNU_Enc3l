@@ -274,7 +274,7 @@ new file mode 100644
 index 0000000..b03c6ee
 --- /dev/null
 +++ b/src/freedreno/vulkan/tu_knl_darwin.cc
-@@ -0,0 +1,1609 @@
+@@ -0,0 +1,1611 @@
 +/*
 + * Native Darwin kernel backend for Turnip: talks to the NativeAdreno IOKit user client (NativeAdrenoABI.h, version 1).
 + * Modelled on tu_knl_kgsl.cc (no libdrm) and tu_knl_drm_msm.cc (the client chooses GPU addresses).
@@ -1839,6 +1839,8 @@ index 0000000..b03c6ee
 +    * chip id (0x43050a01) alone. */
 +   if (info->chip_id == 0x43050a01)
 +      device->dev_id.gpu_id = 740;
++   if (info->chip_id == 0x44050001)
++      device->dev_id.gpu_id = 830;
 +   device->gmem_size = debug_get_num_option("TU_GMEM", info->gmem_bytes);
 +   device->gmem_base = info->gmem_base;
 +   device->uche_trap_base = info->uche_trap_base;

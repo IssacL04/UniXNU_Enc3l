@@ -17,6 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 # --target ios27: the arm64e build for iPadOS 27 (24A446), whose render server is an arm64e process.
 parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--chip', choices=['a740', 'a830'], default='a740')
 parser.add_argument('--target', choices=('ios', 'ios27'), default='ios')
 parser.add_argument('--no-replay', action='store_true', help='omit the optional host simulation capture used by diagnostic probes')
 args = parser.parse_args()
@@ -29,16 +30,29 @@ bundle.mkdir(parents=True)
 sdk = subprocess.check_output(['xcrun', '--sdk', 'iphoneos', '--show-sdk-path'], text=True).strip()
 base = ['xcrun', 'clang', '-target', 'arm64e-apple-ios27.0' if IOS27 else 'arm64-apple-ios17.0', '-isysroot', sdk, '-O2', '-g', '-Wall', '-Wextra', '-Werror',
         '-fstack-protector-strong']
+if args.chip == 'a830':
+    base += ['-DNATIVE_ADRENO_SKIP_A740_REPLAY=1', '-DNATIVE_ADRENO_SP_CORES=6']
 VULKAN_INCLUDE = ROOT / '.cache/mesa-work/include'
 TURNIP = ROOT / ('build/mesa-tu-ios27' if IOS27 else 'build/mesa-tu-ios') / 'src/freedreno/vulkan/libvulkan_freedreno.dylib'
 if not TURNIP.is_file():
     raise SystemExit('Build Turnip first: python3 scripts/build-turnip-darwin.py --target ' + ('ios27' if IOS27 else 'ios'))
 subprocess.run(['python3', ROOT / 'scripts/gen-turnip-smoke-shaders.py'], check=True)
 # Turnip's first submission, recorded on the host, for the plugin's prefix replay (build/turnip-smoke/TurnipReplay.h).
-if args.no_replay:
+if args.no_replay or args.chip == 'a830':
     (ROOT / 'build/turnip-smoke/TurnipReplay.h').unlink(missing_ok=True)
 else:
     subprocess.run(['python3', ROOT / 'scripts/gen-turnip-replay.py'], check=True)
+frontend = [*(['xcrun', 'clang++'] + base[2:]), '-std=c++17', '-fobjc-arc', '-Wno-deprecated-declarations',
+            '-I', ROOT / 'drivers/Adreno740', '-I', ROOT / 'kits/AdrenoPM4', '-I', VULKAN_INCLUDE, '-I', ROOT / 'build/turnip-smoke',
+            '-I', ROOT / 'drivers/NativeMobileDisplay', '-I', ROOT / 'drivers/GopFramebuffer',
+            '-x', 'objective-c++', ROOT / 'drivers/AdrenoMetal/NativeAdrenoMetalPlugin.mm',
+            ROOT / 'drivers/AdrenoMetal/NativeBridgeMetalFrontend.mm']
+subprocess.run([*frontend, '-fsyntax-only'], check=True)
+daemon_source = ['xcrun', 'clang++', *base[2:], '-std=c++17', '-I', ROOT / 'drivers/Adreno740',
+                 '-I', ROOT / 'kits/AdrenoPM4', '-I', VULKAN_INCLUDE, '-I', ROOT / 'build/turnip-smoke',
+                 ROOT / 'drivers/AdrenoMetal/NativeAdrenoProbeDaemon.cpp', '-x', 'objective-c++', '-fobjc-arc',
+                 ROOT / 'drivers/AdrenoMetal/NativeOsLogExport.mm']
+subprocess.run([*daemon_source, '-fsyntax-only'], check=True)
 BRIDGE_TARGET = 'ios27' if IOS27 else 'ios'
 subprocess.run(['python3', ROOT / 'scripts/build-adreno-metal-bridge.py', '--target', BRIDGE_TARGET], check=True)
 BRIDGE = ROOT / 'build/adreno-metal-bridge' / BRIDGE_TARGET / 'libadreno_metal_bridge.a'
@@ -63,10 +77,7 @@ exe = bundle / 'NativeAdrenoMetal'
 # render server's sandbox may refuse to read the list file beside the bundle, and the plugin then primes from this copy (PrimeShaders.h).
 PRIME_LIST = ROOT / 'build/prime-list.txt'
 prime_section = [f'-Wl,-sectcreate,__DATA,__primelist,{PRIME_LIST}'] if PRIME_LIST.is_file() else []
-subprocess.run([*(['xcrun', 'clang++'] + base[2:]), '-std=c++17', '-fobjc-arc', '-Wno-deprecated-declarations', '-bundle',
-                '-I', ROOT / 'drivers/Adreno740', '-I', ROOT / 'kits/AdrenoPM4', '-I', VULKAN_INCLUDE, '-I', ROOT / 'build/turnip-smoke',
-                '-x', 'objective-c++', ROOT / 'drivers/AdrenoMetal/NativeAdrenoMetalPlugin.mm',
-                ROOT / 'drivers/AdrenoMetal/NativeBridgeMetalFrontend.mm', '-x', 'none', pm4, BRIDGE,
+subprocess.run([*frontend, '-bundle', '-x', 'none', pm4, BRIDGE,
                 *link_extra, '-Wl,-dead_strip', *prime_section, '-lobjc', '-framework', 'Foundation', '-framework', 'Metal', '-framework', 'IOSurface', '-o', exe],
                check=True)
 if IOS27:
@@ -110,10 +121,7 @@ entitlements.write_bytes(plistlib.dumps({'com.apple.private.security.no-containe
                                          'com.apple.private.logging.admin': True, 'com.apple.private.logging.diagnostic': True,
                                          'com.apple.private.logging.stream': True}))
 daemon = OUT / 'adrenoprobed'
-subprocess.run(['xcrun', 'clang++', *base[2:], '-std=c++17', '-I', ROOT / 'drivers/Adreno740', '-I', ROOT / 'kits/AdrenoPM4', '-I', VULKAN_INCLUDE,
-                '-I', ROOT / 'build/turnip-smoke',
-                ROOT / 'drivers/AdrenoMetal/NativeAdrenoProbeDaemon.cpp', '-x', 'objective-c++', '-fobjc-arc',
-                ROOT / 'drivers/AdrenoMetal/NativeOsLogExport.mm', '-x', 'none', pm4, '-framework', 'Foundation', '-lz', '-o', daemon], check=True)
+subprocess.run([*daemon_source, '-x', 'none', pm4, '-framework', 'Foundation', '-lz', '-o', daemon], check=True)
 subprocess.run(['codesign', '--force', '--sign', '-', '--pagesize', '4096', '--identifier', 'org.blu-sharky.adrenoprobed',
                 '--entitlements', entitlements, daemon], check=True)
 actual = plistlib.loads(subprocess.check_output(['codesign', '-d', '--entitlements', ':-', str(daemon)], stderr=subprocess.DEVNULL))

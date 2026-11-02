@@ -140,3 +140,15 @@ python3 scripts/check-quartzcore-turnip-cache-host.py
 - [小米平板 6S Pro（sheng）](/zh/devices/sheng)
 - [XNU 驱动](/zh/drivers/xnu-drivers)
 - [4 KiB 页表](/zh/xnu/four-k-page-tables)
+
+开发中的辅助代码接受 A830 芯片 ID `0x44050001`，覆盖 ring／CP、中断、计时器及六缓冲区 GPU context。增大的 SQE 缓冲区和独立 AQE 缓冲区采用可执行映射。`NativeAdrenoA830HwInit` 配置 Gen8 保护、UBWC 和恢复状态，并在 ZAP 认证及安全模式退出 fence 完成后才标记就绪。一加 13T 板级代码已连接电源、GMU、SMMU 和服务发布。`scripts/check-adreno-a830.py` 已通过两代芯片的软件模型回归。一加 13T 较早的候选通过完整 XNU 编译和预链接，实机达到 GPU 就绪并完成 GPU 呈现，用户确认进入 UI；新的 parity 候选仍待生产构建和实机验证。
+
+开发源码通过 `NativeAdrenoDiagnostics.h` 提供 `native_adreno_diagnostics`。非阻塞快照报告插件连接、最近打开进程、核心调用/状态及提交/fence 计数。方法编号与返回值成对采样。锁忙时返回上次成功快照并设置 `cached=1`；服务未发布、首次采样即锁忙或快照自身被占用时返回 false，保留输出不变。Fence poll miss 包含零超时未完成结果，不等同于 GPU 卡死。板级诊断可显示这些计数，无需等待 GPU 执行；它们不测量显示 FPS，也不证明像素正确。
+
+普通用户 BO 从系统内存分配并固定物理页，不预留 BO 池，也不创建任务映射或永久内核映射；分配和释放在共享设备锁外进行。显式连续分配仍保留该要求。user-client 软件回归覆盖碎片页的映射、提交和回收，不代表实机性能结果。
+
+诊断另行保留最近一次非零核心方法编号与返回值，后续成功调用不会清除它。这是历史记录，可能包含正常限时等待；需结合方法编号判断。
+
+OnePlus 13T 的 Run 88 候选接入 GPU parity 分支的系统 BO、每进程页表和 Metal 缓冲区复用，保留 A830 的 SQE/AQE 与 Gen8 计数器差异。Metal 报告六个已配置 SP，板级通过原机 OPP 请求 389 MHz；实际活动核心数、频率和稳定 60 FPS 尚未验证。
+
+同步 main a9a2cbb 后保留上游 A740 双环抢占实现；A830 明确拒绝该抢占配置，继续使用 Gen8 六缓冲区上下文、SQE/AQE 映射、复位/页表包和计数器地址。iPadOS 17 头文件缺少 GPU-role API 时使用现有前台提交优先级回退；新版头文件保留上游角色策略。

@@ -140,3 +140,15 @@ python3 scripts/check-quartzcore-turnip-cache-host.py
 - [Xiaomi Pad 6S Pro (sheng)](/devices/sheng)
 - [XNU drivers](/drivers/xnu-drivers)
 - [Four-kilobyte pages](/xnu/four-k-page-tables)
+
+The development helpers accept A830 chip ID `0x44050001` for ring/CP, IRQ, timestamp and six-buffer GPU contexts. The larger SQE buffer and separate AQE buffer have executable mappings. `NativeAdrenoA830HwInit` programs Gen8 protection, UBWC and restore state, then requires ZAP authentication and a secure-exit fence before readiness. The OnePlus 13T board package connects power, GMU, SMMU and service publication. Both generations pass software-peer regressions through `scripts/check-adreno-a830.py`. Earlier OnePlus 13T candidates built and prelinked successfully, reached GPU readiness and completed GPU presentation with user-confirmed UI startup. The new parity candidate still requires production and device qualification.
+
+The development source exposes `native_adreno_diagnostics` through `NativeAdrenoDiagnostics.h`. The nonblocking snapshot reports plugin connections, the latest opener, core calls/status and submit/fence counters. A busy GPU lock returns the last successful sample with `cached=1`; before the first sample, during snapshot contention or without a published service, the output stays untouched and the function returns false. Core method/status are paired; fence poll misses include zero-timeout incomplete waits and do not count only stalled jobs. Boards can display these counters without waiting on GPU execution; they do not measure display FPS or prove pixel correctness.
+
+Ordinary user BOs use wired system-backed pages without a reserved BO pool, a task mapping or a permanent kernel mapping. Allocation and release happen outside the shared device lock. Explicit contiguous allocations retain their requirement. The user-client software-peer regression covers fragmented pages through map, submit and retirement; it does not measure hardware performance.
+
+Diagnostics also retain the latest nonzero core method/status pair across later successful calls. It is historical evidence and may record an ordinary timed wait; the method identifies which operation returned it.
+
+The Run 88 OnePlus 13T candidate adopts GPU-parity system BOs, per-process page tables and Metal buffering while preserving A830 SQE/AQE and Gen8 counter differences. Metal reports six configured SPs and the board requests its original 389 MHz OPP. Active cores, achieved frequency and stable 60 FPS remain unverified.
+
+The main update to a9a2cbb retains the upstream A740 two-ring preemption implementation. A830 explicitly rejects that preemption setup and keeps its six-buffer Gen8 context, SQE/AQE mappings, reset/table packets and counter address. On iPadOS 17 headers without GPU-role APIs, submit priority uses the existing foreground fallback; newer headers retain the upstream role policy.

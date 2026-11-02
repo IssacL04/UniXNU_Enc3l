@@ -38,6 +38,10 @@ if (args.verified_root or args.negative_verified_block) and args.component != 'N
 if args.negative_verified_block and not args.verified_root:
     parser.error('The isolated input fault requires verified block mode')
 component = args.component
+if identifier == 'Adreno740' and (ROOT / 'kits/oneplus13t/PaganiGpu.cpp').is_file():
+    subprocess.run([sys.executable, ROOT / 'scripts/build-pagani-gpu.py', '--tree', ROOT,
+                    '--kernelcache', ROOT / '../../../../ipsw/21H461/kernelcache.decompressed'], check=True)
+    raise SystemExit(0)
 recipe = ROOT / 'build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/iokit/DEVELOPMENT/IOPlatformExpert.cpo.json'
 record = json.loads(recipe.read_text().strip().rstrip(','))
 directory = 'GopFramebuffer' if runtime in ('NativeLegacyDisplay', 'NativeGOPPresenter') else 'AdrenoMetal' if runtime in ('NativeOfflineGPU', 'NativeOfflineAccelerator', 'NativeIOGPUProviderProbe') else identifier

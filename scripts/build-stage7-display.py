@@ -199,16 +199,16 @@ def code(data,info):
     sec=next(s for g in info['segments'] for s in g['sections'] if s['name']=='__text');return data[sec['fileoff']:sec['fileoff']+sec['size']]
 require(code(raw,image)==code(late.read_bytes(),macho(late.read_bytes())),'Only owned initializer section registration changes')
 objects=[late,OUT/'original-bindings.o']
-for component in ('Stage7Probe','NativeKeyStoreEvents'):
+for component in ('Stage7Probe','NativeKeyStoreEvents','NativeGOPPresenter'):
     print(run(['python3',ROOT/'scripts/build-stage7-driver.py',component],text=True),end='')
     directory=ROOT/'build'/('native-keystore-events' if component=='NativeKeyStoreEvents' else 'native-legacy-display')
     source_obj=directory/(component+'.o')
-    if component=='NativeKeyStoreEvents':
+    if component in ('NativeKeyStoreEvents','NativeGOPPresenter'):
         staged=directory/(component+'.late.o')
         run([llvm/'llvm-objcopy','--remove-section=__DATA,__mod_init_func',
-             '--globalize-symbol=__GLOBAL__sub_I_NativeKeyStoreEvents.cpp',source_obj,staged])
+             f'--globalize-symbol=__GLOBAL__sub_I_{component}.cpp',source_obj,staged])
         require(code(source_obj.read_bytes(),macho(source_obj.read_bytes()))==code(staged.read_bytes(),macho(staged.read_bytes())),
-                'Keystore late registration leaves instructions unchanged')
+                component+' late registration leaves instructions unchanged')
         objects.append(staged)
     else:objects.append(source_obj)
 print(run(['python3',ROOT/'scripts/build-pagani-peripherals.py','--kernelcache',args.kernelcache],text=True),end='')
@@ -218,6 +218,8 @@ archive=OUT/'libNativeLegacyDisplay.late.a';archive.unlink(missing_ok=True)
 run(['xcrun','ar','rcs',archive,*objects])
 sources=[ROOT/'drivers/NativeMobileDisplay/NativeLegacyDisplay.cpp',
          ROOT/'drivers/NativeMobileDisplay/NativeLegacyRequest.h',
+         ROOT/'drivers/NativeMobileDisplay/NativeGOPPresenter.cpp',
+         ROOT/'drivers/NativeMobileDisplay/NativeGOPWire.h',
          ROOT/'drivers/NativeKeyStoreEvents/NativeKeyStoreEvents.cpp',
          ROOT/'drivers/Stage7Probe/Stage7Probe.cpp',Path(__file__),
          ROOT/'scripts/build-stage7-driver.py',ROOT/'scripts/original_stage7.py',ROOT/'scripts/audit-stage7-display.py']

@@ -23,14 +23,14 @@ def c_command(command):
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('component', choices=['NativeLegacyDisplay', 'NativeKeyStoreEvents', 'Stage7Probe', 'PaganiInput', 'PaganiS3910', 'PaganiGeniSpi', 'PaganiPanel'])
+parser.add_argument('component', choices=['NativeLegacyDisplay', 'NativeGOPPresenter', 'NativeKeyStoreEvents', 'Stage7Probe', 'PaganiInput', 'PaganiS3910', 'PaganiGeniSpi', 'PaganiPanel'])
 component = parser.parse_args().component
 directory = root / 'build' / ('native-keystore-events' if component == 'NativeKeyStoreEvents' else 'native-legacy-display')
 if component.startswith('Pagani'):
     directory = root / 'build/pagani-peripherals'
 directory.mkdir(parents=True, exist_ok=True)
 source = (root / 'drivers/Stage7Probe/Stage7Probe.cpp' if component == 'Stage7Probe' else
-          root / 'drivers' / ('NativeMobileDisplay' if component == 'NativeLegacyDisplay' else component) / (component + '.cpp'))
+          root / 'drivers' / ('NativeMobileDisplay' if component in ('NativeLegacyDisplay','NativeGOPPresenter') else component) / (component + '.cpp'))
 if component in ('PaganiS3910','PaganiGeniSpi'):
     source = root / ('drivers/PaganiInput/S3910.c' if component=='PaganiS3910' else 'drivers/QcomGeniSpi/GeniSpi.c')
 record = json.loads((root / 'build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/iokit/DEVELOPMENT/IOPlatformExpert.cpo.json').read_text().strip().rstrip(','))

@@ -15,7 +15,7 @@
 	url = https://github.com/UniXNU/SoftwareAES.git
 [submodule "drivers/Adreno740"]
 	path = drivers/Adreno740
-	url = https://github.com/UniXNU/Adreno740.git
+	url = https://github.com/IssacL04/Adreno740.git
 [submodule "drivers/QcomGeniSpi"]
 	path = drivers/QcomGeniSpi
 	url = https://github.com/UniXNU/QcomGeniSpi.git
@@ -24,7 +24,7 @@
 	url = https://github.com/UniXNU/AppleKeyStoreState.git
 [submodule "drivers/AdrenoMetal"]
 	path = drivers/AdrenoMetal
-	url = https://github.com/UniXNU/AdrenoMetal.git
+	url = https://github.com/IssacL04/AdrenoMetal.git
 [submodule "drivers/GopFramebuffer"]
 	path = drivers/GopFramebuffer
 	url = https://github.com/UniXNU/GopFramebuffer.git
@@ -39,7 +39,7 @@
 	url = https://github.com/UniXNU/VirtioMmioConsole.git
 [submodule "kits/AdrenoFirmware"]
 	path = kits/AdrenoFirmware
-	url = https://github.com/UniXNU/AdrenoFirmware.git
+	url = https://github.com/IssacL04/AdrenoFirmware.git
 [submodule "kits/AdrenoPM4"]
 	path = kits/AdrenoPM4
 	url = https://github.com/UniXNU/AdrenoPM4.git

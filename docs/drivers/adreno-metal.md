@@ -35,3 +35,21 @@ python3 scripts/build-adreno-metal-plugin.py
 ```
 
 See [Adreno740](/drivers/adreno740) for the runtime path, staging commands, and checks.
+
+For the OnePlus 13T A830 candidate, pass `--chip a830` to the plugin builder. This excludes the A740-only recorded command replay even if its generated header remains in the build tree. Turnip still generates commands from the actual device information. The device's `build-metal-userspace.py` prepares the pinned sources, builds the iOS library and plugin, and stages a separate Data seed with its owner trust bundle. Production iOS compilation and signing checks have passed for Turnip, the Metal bridge, the plugin and its probe daemon. OnePlus 13T images have shown GPU submissions and presentation on device; Run 88 boots with improved interaction, and its SYSMEM control restores normal colors. Run 91 confirms correct colors and readable diagnostics at about 40 GPU presentations/s; sustained 120 FPS remains unverified.
+
+When the scanout worker exits, its handoff connection closes. Board presenters can implement the optional close hook to release an outstanding frame and notify display fallback.
+
+Optional heap aliasing now forwards buffer/texture/view ownership and offsets to the pinned runtime, allowing automatic heaps to reuse storage while old objects remain retained. The real frontend/Rust host regression and old-code control cover reuse and destruction; this is separate from phone GPU performance.
+
+The Run 88 OnePlus 13T candidate adopts GPU-parity system BOs, per-process page tables and Metal buffering while preserving A830 SQE/AQE and Gen8 counter differences. Metal reports six configured SPs and the board requests its original 389 MHz OPP. Active cores, achieved frequency and stable 60 FPS remain unverified.
+
+The plugin builder checks the plugin, frontend and probe syntax before Rust bridge compilation. The iPadOS 27 framebuffer branch experiment and its helper are compiled only for arm64e.
+
+The OnePlus 13T scanout follow-up applies the negotiated diagnostic band to opaque BGRA compute copies and half-float conversion. Pixel checks cover empty, middle and full bands and padded rows; the actual macOS/MoltenVK regression passed in Run 90; Run 90 and Run 91 device feedback confirms readable diagnostics.
+
+The OnePlus 13T Run 88 SYSMEM control restored correct colors on device. Its candidate profile now uses `sheng-tu-debug=sysmem,nocb` pending A830 GMEM validation. Interaction is reported around 30-60 FPS with control-center and cold-launch stalls; sustained frame rate has not been measured.
+
+The A830 performance candidate uses opt-in profiling, iOS worker QoS and non-lazy SYSMEM attachments. The upstream runtime patch series is checked against the pinned translator. Its 120 Hz software pacing does not qualify panel refresh or sustained FPS; Run 90 confirms correct colors and readable diagnostic rows on device.
+
+The current main integration uses AdrenoMetal 831a9dc and the upstream 24-patch runtime series. Scanout markers and periodic PF text are opt-in after the first frame. Optional 40-byte completion records carry dependency-wait, encode/import, submit, completion-wait and runtime GPU timestamp durations; a size/unsupported refusal falls back once to the legacy 16-byte record. Kernel offer-to-delivery time and observed software VSYNC rate are reported separately. A missing GPU timestamp remains unknown; a host Vulkan driver may report a host-derived interval. Run 91 showed about 40 GPU presentations/s on OnePlus 13T, so 120 FPS and physical panel timing remain unqualified.

@@ -1,0 +1,32 @@
+diff --git a/src/freedreno/vulkan/tu_knl_darwin.cc b/src/freedreno/vulkan/tu_knl_darwin.cc
+--- a/src/freedreno/vulkan/tu_knl_darwin.cc
++++ b/src/freedreno/vulkan/tu_knl_darwin.cc
+@@ -1342,6 +1342,7 @@
+    for (unsigned i = 0; i < count; i++)
+       req.buffers[i] = entries[i];
+ 
++   const uint64_t deadline = os_time_get_nano() + 5000000000ull;
+    for (;;) {
+       NativeAdrenoAbiSubmitReply reply = {};
+       const uint64_t began = tu_trace_clock_ns();
+@@ -1355,14 +1356,17 @@
+          return vk_device_set_lost(&dev->vk, "submit failed: 0x%x", kr);
+       rec->busy++;
+ 
++      if (os_time_get_nano() >= deadline)
++         return vk_device_set_lost(&dev->vk, "submit: GPU queue stayed busy for five seconds");
++
+       pthread_mutex_lock(&dw.lock);
+       uint32_t oldest = dw.inflight_count ? dw.inflight[0] : 0;
+       pthread_mutex_unlock(&dw.lock);
+       const uint64_t waited = tu_trace_clock_ns();
+-      if (!oldest)
+-         sched_yield();
+-      else if (dw_wait_fence_locked_free(dev, oldest, UINT64_MAX) != VK_SUCCESS)
++      if (oldest && dw_wait_fence_locked_free(dev, oldest, deadline) != VK_SUCCESS)
+          return vk_device_set_lost(&dev->vk, "submit: waiting for ring space failed");
++      /* A completed local fence does not free another client's ring space. */
++      usleep(100);
+       rec->space_wait_us += (uint32_t)((tu_trace_clock_ns() - waited) / 1000);
+    }
+ }

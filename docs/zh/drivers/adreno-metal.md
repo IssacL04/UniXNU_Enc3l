@@ -33,3 +33,21 @@ python3 scripts/build-adreno-metal-plugin.py
 ```
 
 运行时流程、发布命令和检查见 [Adreno740](/zh/drivers/adreno740)。
+
+构建一加 13T 的 A830 候选插件时，给插件构建脚本传入 `--chip a830`。即使构建目录残留生成的回放头文件，该选项也会排除 A740 专用命令回放；Turnip 继续根据实际设备信息生成命令。设备仓库的 `build-metal-userspace.py` 准备固定版本的源码、构建 iOS 库和插件，再生成独立 Data seed 与 owner trust bundle。Turnip、Metal 桥接库、插件和探测程序已通过正式 iOS 编译及相应签名检查。一加 13T 镜像已在真机观察到 GPU 提交和呈现；Run 88 已启动并改善交互，SYSMEM 对照恢复正常颜色。诊断区域修复和持续动画性能仍待设备验证。
+
+scanout 线程退出时会关闭 handoff 连接。板级 presenter 可实现可选的关闭接口，释放待处理帧并通知显示回退。
+
+堆资源的 alias 操作、所属 heap 和 offset 现转发到锁定运行库，允许自动 heap 在旧对象仍保留时复用存储。真实前端/Rust 主机回归及旧代码对照覆盖复用和销毁；手机 GPU 性能仍需单独测试。
+
+OnePlus 13T 的 Run 88 候选接入 GPU parity 分支的系统 BO、每进程页表和 Metal 缓冲区复用，保留 A830 的 SQE/AQE 与 Gen8 计数器差异。Metal 报告六个已配置 SP，板级通过原机 OPP 请求 389 MHz；实际活动核心数、频率和稳定 60 FPS 尚未验证。
+
+插件构建器在 Rust bridge 编译前检查插件、frontend 和 probe 的语法。iPadOS 27 的 framebuffer 分支实验及其辅助函数只在 arm64e 构建中启用。
+
+一加 13T 的后续修正将协商的日志保留区域用于 BGRA 计算拷贝和半浮点转换。Run 90 的实际 macOS/MoltenVK 逐像素检查已通过，覆盖无保留区、中间保留区、整帧保留区及行尾留白；设备日志可读性待验证。
+
+一加 13T 的 Run 88 SYSMEM 对照已在设备上恢复正常颜色。候选配置使用 `sheng-tu-debug=sysmem,nocb`，等待 A830 GMEM 正确性验证。用户反馈流畅时约 30-60 FPS，控制中心和冷启动仍卡顿，持续帧率尚未测量。
+
+A830 性能候选关闭默认追踪，给 iOS 工作线程应用 QoS，并在 SYSMEM 使用非 lazy 附件内存。上游完整运行时补丁序列已按固定 translator 校验。120 Hz 软件呈现请求仍需实测帧率和面板刷新；Run 90 已由用户确认颜色正常、日志完整。
+
+当前 main 集成 AdrenoMetal 831a9dc 及上游 24 个运行时补丁。首帧之后的呈现标记和周期 PF 文本需显式开启诊断。可选 40 字节完成消息附带依赖等待、编码/导入、提交、完成等待和运行时 GPU 时间戳差；旧内核拒绝扩展后退回原 16 字节消息。内核另统计 offer 到交付的时间及实际软件 VSYNC 通知频率。缺少 GPU 时间戳时显示未知；主机 Vulkan 驱动可能提供主机时钟区间。Run 91 在一加 13T 上约 40 次 GPU 呈现/秒，120 FPS 与物理面板时序仍未验证。
