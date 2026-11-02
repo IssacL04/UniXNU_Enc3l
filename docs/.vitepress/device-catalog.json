@@ -30,6 +30,11 @@
     "title_zh": "Xiaomi Redmi K40 (alioth, M2012K11AC) (songchiyu)"
   },
   {
+    "name": "alioth-taishang1024",
+    "title": "Xiaomi Redmi K40 (alioth, M2012K11AC) (Taishang1024)",
+    "title_zh": "Xiaomi Redmi K40 (alioth, M2012K11AC) (Taishang1024)"
+  },
+  {
     "name": "alioth-yang232138",
     "title": "Xiaomi Redmi K40 (alioth, M2012K11AC) (yang232138)",
     "title_zh": "Xiaomi Redmi K40 (alioth, M2012K11AC) (yang232138)"
@@ -88,6 +93,11 @@
     "name": "cepheus-c0der88",
     "title": "Xiaomi Mi 9 (c0der88)",
     "title_zh": "Xiaomi Mi 9 (c0der88)"
+  },
+  {
+    "name": "cepheus-didazhiqian",
+    "title": "Xiaomi Mi 9 (cepheus) (didazhiqian)",
+    "title_zh": "Xiaomi Mi 9 (cepheus) (didazhiqian)"
   },
   {
     "name": "cepheus-yangqi0408",
@@ -265,6 +275,11 @@
     "title_zh": "Xiaomi 13 (Kerfand)"
   },
   {
+    "name": "fuxi-kkkpc",
+    "title": "Xiaomi 13 (kkkpc)",
+    "title_zh": "Xiaomi 13 (kkkpc)"
+  },
+  {
     "name": "fuxi-ljhhkx529",
     "title": "Xiaomi 13 (ljhhkx529)",
     "title_zh": "Xiaomi 13 (ljhhkx529)"
@@ -433,6 +448,16 @@
     "name": "komodo",
     "title": "Google Pixel 9 Pro XL (komodo)",
     "title_zh": "Google Pixel 9 Pro XL（komodo）"
+  },
+  {
+    "name": "lafa",
+    "title": "realme GT8 Pro (lafa) RMX5200: UniXNU bring-up",
+    "title_zh": "realme GT8 Pro (lafa) RMX5200: UniXNU bring-up"
+  },
+  {
+    "name": "lavender",
+    "title": "Xiaomi Redmi Note 7 (eMMC, 4 GB DRAM, 1080x2340 panel)",
+    "title_zh": "Xiaomi Redmi Note 7 (eMMC, 4 GB DRAM, 1080x2340 panel)"
   },
   {
     "name": "lemonades",
@@ -625,9 +650,19 @@
     "title_zh": "nubia RedMagic 9 Pro / 9 Pro+ / 9S Pro / 9S Pro+ (NX769J)"
   },
   {
+    "name": "odin3",
+    "title": "AYN Odin 3 (Dragonwing Q8, SM8750), 16 GiB",
+    "title_zh": "AYN Odin 3 (Dragonwing Q8, SM8750), 16 GiB"
+  },
+  {
     "name": "oneplus13t",
     "title": "OnePlus 13T (oneplus13t)",
     "title_zh": "一加 13T（oneplus13t）"
+  },
+  {
+    "name": "orangepi5",
+    "title": "Orange Pi 5 (Rockchip RK3588S)",
+    "title_zh": "Orange Pi 5 (Rockchip RK3588S)"
   },
   {
     "name": "pandora",
@@ -673,6 +708,11 @@
     "name": "picasso",
     "title": "Redmi K30 5G (picasso)",
     "title_zh": "Redmi K30 5G（picasso）"
+  },
+  {
+    "name": "picasso-huydre",
+    "title": "Redmi K30 5G (huydre)",
+    "title_zh": "Redmi K30 5G (huydre)"
   },
   {
     "name": "picasso-minhtritt1996",
@@ -728,6 +768,11 @@
     "name": "pong",
     "title": "Nothing Phone (2) (pong)",
     "title_zh": "Nothing Phone (2)（pong）"
+  },
+  {
+    "name": "pong-agxmx666",
+    "title": "Nothing Phone (2): UniXNU UEFI bring-up (AGXMX666)",
+    "title_zh": "Nothing Phone (2): UniXNU UEFI bring-up (AGXMX666)"
   },
   {
     "name": "pong-hxzbaka",
@@ -820,6 +865,11 @@
     "title_zh": "Xiaomi Pad 6S Pro (FFT-infra)"
   },
   {
+    "name": "sheng-ht94911",
+    "title": "Xiaomi Pad 6S Pro (ht94911)",
+    "title_zh": "Xiaomi Pad 6S Pro (ht94911)"
+  },
+  {
     "name": "sheng-hxzbaka",
     "title": "Xiaomi Pad 6S Pro (hxzbaka)",
     "title_zh": "Xiaomi Pad 6S Pro (hxzbaka)"
@@ -830,6 +880,21 @@
     "title_zh": "Xiaomi Pad 6S Pro (jn7163)"
   },
   {
+    "name": "sheng-jsongmax",
+    "title": "Xiaomi Pad 6S Pro (jsongmax)",
+    "title_zh": "Xiaomi Pad 6S Pro (jsongmax)"
+  },
+  {
+    "name": "sheng-kkkpc",
+    "title": "Xiaomi Pad 6S Pro (kkkpc)",
+    "title_zh": "Xiaomi Pad 6S Pro (kkkpc)"
+  },
+  {
+    "name": "sheng-ks114514",
+    "title": "Xiaomi Pad 6S Pro (ks114514)",
+    "title_zh": "Xiaomi Pad 6S Pro (ks114514)"
+  },
+  {
     "name": "sheng-liangkam",
     "title": "Xiaomi Pad 6S Pro (LiangKam)",
     "title_zh": "Xiaomi Pad 6S Pro (LiangKam)"
@@ -838,6 +903,11 @@
     "name": "sheng-lilinnan",
     "title": "Xiaomi Pad 6S Pro (lilinnan)",
     "title_zh": "Xiaomi Pad 6S Pro (lilinnan)"
+  },
+  {
+    "name": "sheng-lithosss",
+    "title": "Xiaomi Pad 6S Pro (Lithosss)",
+    "title_zh": "Xiaomi Pad 6S Pro (Lithosss)"
   },
   {
     "name": "sheng-macos",
@@ -975,6 +1045,11 @@
     "title_zh": "Xiaomi Pad 7 (iOSNJBrepo)"
   },
   {
+    "name": "uke-tonghuaqwq",
+    "title": "Xiaomi Pad 7 (TongHuaQWQ)",
+    "title_zh": "Xiaomi Pad 7 (TongHuaQWQ)"
+  },
+  {
     "name": "uke-wuhaoran956-cyber",
     "title": "Xiaomi Pad 7 (wuhaoran956-cyber)",
     "title_zh": "Xiaomi Pad 7 (wuhaoran956-cyber)"
@@ -1010,6 +1085,11 @@
     "title_zh": "unixnu-build"
   },
   {
+    "name": "venus",
+    "title": "Xiaomi Mi 11 M2011K2C: single-CPU platform bring-up",
+    "title_zh": "Xiaomi Mi 11 M2011K2C: single-CPU platform bring-up"
+  },
+  {
     "name": "vermeer",
     "title": "Redmi K70 (vermeer)",
     "title_zh": "Redmi K70（vermeer）"
@@ -1030,6 +1110,11 @@
     "title_zh": "Redmi K70 (yyx2025)"
   },
   {
+    "name": "vili",
+    "title": "Xiaomi 11T Pro (vili, 2107113SG), SM8350 / Snapdragon 888",
+    "title_zh": "Xiaomi 11T Pro (vili, 2107113SG), SM8350 / Snapdragon 888"
+  },
+  {
     "name": "wayne",
     "title": "Xiaomi Mi 6X (2018)",
     "title_zh": "Xiaomi Mi 6X (2018)"
@@ -1048,6 +1133,11 @@
     "name": "zeta",
     "title": "Microsoft Surface Duo 2 (zeta)",
     "title_zh": "Microsoft Surface Duo 2（zeta）"
+  },
+  {
+    "name": "zizhan",
+    "title": "Xiaomi MIX Fold 2 (zizhan, SM8475): UniXNU bring-up derived from Pong",
+    "title_zh": "Xiaomi MIX Fold 2 (zizhan, SM8475): UniXNU bring-up derived from Pong"
   },
   {
     "name": "zorn",
