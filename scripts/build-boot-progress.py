@@ -22,36 +22,52 @@ def main():
     subprocess.run(['python3', root / 'scripts/prepare-boot-logo.py',
                     root / '../../../../ipsw/21H461/applelogo@2732~ipad.im4p', output / 'BootLogo.h'], check=True)
     source = root / 'drivers/BootProgress'
-    obj = output / 'BootProgress.o'
-    command = compile_command(record, source / 'BootProgress.c', obj)
-    # Bootstrap records disable the hooks; this object supplies their enabled implementation.
-    args = iter(command)
-    command = []
-    for value in args:
-        if value == '-D':
-            define = next(args)
-            if not define.startswith(('XNU_BOOT_PROGRESS=', 'XNU_EARLY_BOOT_PROGRESS=')):
-                command += [value, define]
-        elif not value.startswith(('-DXNU_BOOT_PROGRESS=', '-DXNU_EARLY_BOOT_PROGRESS=')):
-            command.append(value)
-    command += ['-DXNU_BOOT_PROGRESS=1', '-DXNU_EARLY_BOOT_PROGRESS=1',
-                '-ffreestanding', '-fno-builtin', '-fno-stack-protector', '-mgeneral-regs-only', '-fno-jump-tables',
-                '-I' + str(root / 'drivers/PaganiDarwinBoot/DarwinBootPkg/Driver'), '-I' + str(output)]
-    subprocess.run(command, cwd=record['directory'], check=True)
+    # BootProgress.c, plus RamoopsLog.c (the persistent ramoops log and the timed warm reset: pagani-ramoops,
+    # pagani-reset-after, pagani-panic-reset), GunyahWdog.c (pagani-wdog: the hypervisor watchdog that resets a hung
+    # kernel; it logs through RamoopsLog) and UfsLog.c (sheng-log: RamoopsLog's snapshots on UFS, the strong boot_log_export_put)
+    # when the driver tree has them; all run on the early, IRQ and panic paths.
+    names = ['BootProgress']
+    if (source / 'RamoopsLog.c').is_file():
+        names.append('RamoopsLog')
+        for extra in ('GunyahWdog', 'UfsLog'):
+            if (source / f'{extra}.c').is_file():
+                names.append(extra)
+    for name in ('RamoopsLog', 'GunyahWdog', 'UfsLog'):
+        (output / f'{name}.o').unlink(missing_ok=True)
+    objects = []
+    for name in names:
+        obj = output / f'{name}.o'
+        command = compile_command(record, source / f'{name}.c', obj)
+        # Bootstrap records disable the hooks; this object supplies their enabled implementation.
+        args = iter(command)
+        command = []
+        for value in args:
+            if value == '-D':
+                define = next(args)
+                if not define.startswith(('XNU_BOOT_PROGRESS=', 'XNU_EARLY_BOOT_PROGRESS=')):
+                    command += [value, define]
+            elif not value.startswith(('-DXNU_BOOT_PROGRESS=', '-DXNU_EARLY_BOOT_PROGRESS=')):
+                command.append(value)
+        command += ['-DXNU_BOOT_PROGRESS=1', '-DXNU_EARLY_BOOT_PROGRESS=1',
+                    '-ffreestanding', '-fno-builtin', '-fno-stack-protector', '-mgeneral-regs-only', '-fno-jump-tables',
+                    '-I' + str(root / 'drivers/PaganiDarwinBoot/DarwinBootPkg/Driver'), '-I' + str(output)]
+        subprocess.run(command, cwd=record['directory'], check=True)
+        objects.append(obj)
     entry = output / 'Entry.o'
     subprocess.run(['xcrun', 'clang', '-target', 'arm64-apple-ios17.0', '-c', source / 'Entry.S', '-o', entry], check=True)
-    for path in (obj, entry):
+    for path in (*objects, entry):
         if struct.unpack('<4I', path.read_bytes()[:16]) != (0xfeedfacf, 0x100000c, 0, 1):
             raise SystemExit(f'{path}: expected ordinary ARM64 Mach-O object')
-    undefined = subprocess.check_output(['xcrun', 'nm', '-u', obj], text=True)
-    if any(name in undefined for name in ('_memset', '_memcpy', '_bzero', 'stack_chk', 'chkstk')):
-        raise SystemExit('Early console unexpectedly depends on a compiler runtime helper: ' + undefined)
-    assembly = subprocess.check_output(['llvm-objdump', '-d', '--no-show-raw-insn', '--no-leading-addr', obj], text=True)
-    if re.search(r'\b(?:[qds][0-9]+|v[0-9]+\.[0-9a-z]+)\b', assembly):
-        raise SystemExit('Early/IRQ console unexpectedly uses FP/SIMD registers')
+    for obj in objects:
+        undefined = subprocess.check_output(['xcrun', 'nm', '-u', obj], text=True)
+        if any(name in undefined for name in ('_memset', '_memcpy', '_bzero', 'stack_chk', 'chkstk')):
+            raise SystemExit(f'{obj.name}: early console unexpectedly depends on a compiler runtime helper: ' + undefined)
+        assembly = subprocess.check_output(['llvm-objdump', '-d', '--no-show-raw-insn', '--no-leading-addr', obj], text=True)
+        if re.search(r'\b(?:[qds][0-9]+|v[0-9]+\.[0-9a-z]+)\b', assembly):
+            raise SystemExit(f'{obj.name}: early/IRQ console unexpectedly uses FP/SIMD registers')
     archive = output / 'libBootProgress.a'
     archive.unlink(missing_ok=True)
-    subprocess.run(['xcrun', 'ar', 'rcs', archive, obj, entry], check=True)
+    subprocess.run(['xcrun', 'ar', 'rcs', archive, *objects, entry], check=True)
     print(archive)
 
 

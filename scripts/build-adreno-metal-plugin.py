@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from gpu_abi import abi_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 # --target ios27: the arm64e build for iPadOS 27 (24A446), whose render server is an arm64e process.
@@ -59,12 +60,12 @@ if args.no_replay or args.chip == 'a830':
 else:
     subprocess.run(['python3', ROOT / 'scripts/gen-turnip-replay.py'], check=True)
 frontend = [*(['xcrun', 'clang++'] + base[2:]), '-std=c++17', '-fobjc-arc', '-Wno-deprecated-declarations',
-            '-I', ROOT / 'drivers/Adreno740', '-I', ROOT / 'kits/AdrenoPM4', '-I', VULKAN_INCLUDE, '-I', ROOT / 'build/turnip-smoke',
+            '-I', abi_dir(ROOT), '-I', ROOT / 'kits/AdrenoPM4', '-I', VULKAN_INCLUDE, '-I', ROOT / 'build/turnip-smoke',
             '-I', ROOT / 'drivers/NativeMobileDisplay', '-I', ROOT / 'drivers/GopFramebuffer',
             '-x', 'objective-c++', ROOT / 'drivers/AdrenoMetal/NativeAdrenoMetalPlugin.mm',
             ROOT / 'drivers/AdrenoMetal/NativeBridgeMetalFrontend.mm']
 subprocess.run([*frontend, '-fsyntax-only'], check=True)
-daemon_source = ['xcrun', 'clang++', *base[2:], '-std=c++17', '-I', ROOT / 'drivers/Adreno740',
+daemon_source = ['xcrun', 'clang++', *base[2:], '-std=c++17', '-I', abi_dir(ROOT),
                  '-I', ROOT / 'kits/AdrenoPM4', '-I', VULKAN_INCLUDE, '-I', ROOT / 'build/turnip-smoke',
                  ROOT / 'drivers/AdrenoMetal/NativeAdrenoProbeDaemon.cpp', '-x', 'objective-c++', '-fobjc-arc',
                  ROOT / 'drivers/AdrenoMetal/NativeOsLogExport.mm']

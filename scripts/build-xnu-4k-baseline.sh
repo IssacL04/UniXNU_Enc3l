@@ -105,8 +105,12 @@ out = Path('build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837')
 stamp = out / '.boot-progress-mode'
 identity = mode + ':' + sys.argv[2] + ':' + (hashlib.sha256(Path('build/boot-progress/libBootProgress.a').read_bytes()).hexdigest() if mode == '1' else 'disabled')
 if not stamp.exists() or stamp.read_text() != identity:
-    for directory, names in [('osfmk', ['start','arm_init','startup','video_console','serial_console','sleh','debug','printf']),
-                             ('bsd', ['bsd_init','kern_exec','kern_exit']), ('pexpert', ['pe_kprintf'])]:
+    # Every object whose source tests XNU_BOOT_PROGRESS: make does not track CFLAGS, so after the bootstrap pass (=0) an
+    # object left out here keeps its disabled build (bsd_kern, kern_sig: the device repository's crash-trace.patch; sched_prim, cpu,
+    # cpu_common, kdebug: its phone-stall-probe.patch).
+    for directory, names in [('osfmk', ['start','arm_init','startup','video_console','serial_console','sleh','debug','printf',
+                                        'bsd_kern','sched_prim','cpu','cpu_common']),
+                             ('bsd', ['bsd_init','kern_exec','kern_exit','kern_sig','kdebug']), ('pexpert', ['pe_kprintf'])]:
         for name in names:
             (out / directory / 'DEVELOPMENT' / (name + '.o')).unlink(missing_ok=True)
     (out / 'iokit/DEVELOPMENT/IOKitBSDInit.cpo').unlink(missing_ok=True)
@@ -656,7 +660,7 @@ if [ "${XNU_SOURCE_CORECRYPTO14:-0}" = 1 ] && [ "$BOOTSTRAP" = 0 ]; then
   if [ "${XNU_NATIVE_ADRENO:-0}" = 1 ]; then
     # NativeAdreno plus its kits (scripts/build-native-adreno-kits.py). No personality is installed: the
     # board probe calls NativeAdrenoGmuContextBringup directly once it has powered the GPU CX domain.
-    ADRENO_ARCHIVE=$ROOT/build/adreno740/libAdreno740.a
+    ADRENO_ARCHIVE=${XNU_NATIVE_ADRENO_ARCHIVE:-$ROOT/build/adreno740/libAdreno740.a}
     test -f "$ADRENO_ARCHIVE"
     KERNEL_EXTRA_ARCHIVES="$KERNEL_EXTRA_ARCHIVES -Wl,-force_load,$ADRENO_ARCHIVE"
     KERNEL_ARCHIVE_DEPENDENCIES="$KERNEL_ARCHIVE_DEPENDENCIES $ADRENO_ARCHIVE"
@@ -802,7 +806,7 @@ python3 - "${XNU_NATIVE_AES:-0}" "${XNU_NATIVE_AES_ARCHIVE:-$ROOT/build/software
   "$NATIVE_VIRTIO_CONSOLE" "$ROOT/build/virtio-mmio-console/libVirtioMmioConsole.a" \
   "$NATIVE_OFFLINE_GPU" "$ROOT/build/native-offline-gpu/libNativeOfflineGPU.late.a" \
   "$SHENG_PMGR" "$ROOT/build/sheng-platform-power/libShengPlatformPower.a" \
-  "${XNU_NATIVE_ADRENO:-0}" "$ROOT/build/adreno740/libAdreno740.a" <<'PY'
+  "${XNU_NATIVE_ADRENO:-0}" "${XNU_NATIVE_ADRENO_ARCHIVE:-$ROOT/build/adreno740/libAdreno740.a}" <<'PY'
 import hashlib
 from pathlib import Path
 import sys

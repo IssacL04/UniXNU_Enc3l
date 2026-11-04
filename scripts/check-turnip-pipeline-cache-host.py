@@ -14,6 +14,7 @@ import re
 import struct
 import subprocess
 import tempfile
+from gpu_abi import abi_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'build/turnip-darwin-host'
@@ -54,8 +55,8 @@ def binary_identity(path):
 
 executable = OUT / 'pipeline_cache'
 subprocess.run(['xcrun', 'clang++', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror',
-                '-Wno-unused-parameter', '-Wno-unused-const-variable', '-I', '/opt/homebrew/include',
-                '-I', SHADERS.parent, ROOT / 'drivers/Adreno740/tests/hostsim/pipeline_cache.cpp',
+                '-Wno-unused-parameter', '-Wno-unused-const-variable', '-I', '/opt/homebrew/include', '-I', ROOT / '.cache/mesa-work/include',
+                '-I', SHADERS.parent, abi_dir(ROOT) / 'tests/hostsim/pipeline_cache.cpp',
                 '-o', executable], check=True)
 env = {k: v for k, v in os.environ.items() if not k.startswith(('IR3_', 'FD_MESA_', 'NIR_', 'TU_', 'HOSTSIM_', 'MESA_'))}
 env.update(DYLD_INSERT_LIBRARIES=str(SHIM), MESA_SHADER_CACHE_DISABLE='true', MESA_LOG='')

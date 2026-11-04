@@ -21,6 +21,14 @@ from .util import Error, expand, log, run, sha256_file, tool
 
 EPOCH = 315532800   # 1980-01-01, the first FAT timestamp; keeps the volume reproducible
 
+# DarwinBoot copies the command line into a 1024-byte buffer, its NUL included, and refuses a longer one with EFI_BAD_BUFFER_SIZE (the
+# boot menu comes back, nothing boots); boot_args.CommandLine in XNU has the same 1024 bytes (BOOT_LINE_LENGTH). Nothing shortens it
+# before that: the line travels in EFI/UniXNU/unixnu.toml on the payload's FAT volume, whose parser allocates to size, not in the
+# Android boot image, so no limit of ABL's applies. The check keeps 3 bytes of the 1023 in hand: it is the only place that can refuse a line
+# on the host, and DarwinBoot's own refusal only shows on the phone.
+DARWINBOOT_ARGS_MAX = 1023
+KERNEL_ARGS_LIMIT = 1020
+
 
 def paths(ctx):
     out = ctx.work / 'payload'
@@ -32,10 +40,16 @@ def check_args(arguments):
         if not re.fullmatch(r'[A-Za-z0-9_.\-]+(=[A-Za-z0-9_.,/\-]+)?', value):
             raise Error(f'unsupported kernel argument: {value}')
     line = ' '.join(arguments)
-    # DarwinBoot copies the command line into a 1024-byte buffer and refuses a longer one.
-    if len(line) > 1000:
-        raise Error(f'the kernel command line is {len(line)} bytes; the limit is 1000')
+    if len(line) > KERNEL_ARGS_LIMIT:
+        raise Error(f'the kernel command line is {len(line)} bytes; the limit is {KERNEL_ARGS_LIMIT}')
     return line
+
+
+def check_confirm_args(line, choices):
+    """The boot menu appends a confirmed choice to the line (UniXNULib Main.c): past check_args's margin, up to DarwinBoot's refusal."""
+    for choice in choices:
+        if len(line) + 1 + len(choice) > DARWINBOOT_ARGS_MAX:
+            raise Error(f'the kernel command line with {choice} is over the {DARWINBOOT_ARGS_MAX} bytes DarwinBoot takes')
 
 
 def check_data_input(ctx, data):
@@ -212,7 +226,7 @@ def build(ctx, kernel=None):
             command.append('--ipad-identity')
         if data and adt.get('persistent_data'):
             command.append('--persistent-data')
-        # Fixups of signed text (patches/xnu/native-text-fixup.patch) travel in /chosen/text-fixups, outside the 1000-byte command line.
+        # Fixups of signed text (patches/xnu/native-text-fixup.patch) travel in /chosen/text-fixups, outside the command line.
         for fixup in spec.get('text_fixups', []):
             if not re.fullmatch(r'[A-Za-z0-9_.\-]{1,63},[0-9a-fA-F]{1,16},(?:[0-9a-fA-F]{2}){1,16},(?:[0-9a-fA-F]{2}){1,16}', fixup) or len(fixup) >= 160:
                 raise Error(f'malformed text fixup in board.toml [payload] text_fixups: {fixup}')
@@ -231,6 +245,7 @@ def build(ctx, kernel=None):
         titles, extra = install.get('confirm_titles', []), install.get('confirm_args', [])
         if not install.get('confirm') or not titles or len(titles) != len(extra):
             raise Error('board.toml [payload.install] needs confirm and equally long confirm_titles and confirm_args')
+        check_confirm_args(line, extra)
         # The second boot menu entry: the same kernel and seed behind a confirmation whose choices add a boot argument (for example the Data reset).
         config += (f'[[entry]]\nid = "install"\ntitle = {json.dumps(install.get("title", "Install and boot"))}\n'
                    f'confirm = {json.dumps(install["confirm"])}\nconfirm_titles = {json.dumps(titles)}\nconfirm_args = {json.dumps(extra)}\n'

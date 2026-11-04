@@ -9,14 +9,19 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from gpu_abi import abi_dir
 
 ROOT = Path(__file__).resolve().parents[1]
-kit = ROOT / 'drivers/Adreno740'
+# The kernel driver whose user-client stack the host peer runs (scripts/gpu_abi.py: drivers/Adreno830 when present, else drivers/Adreno740;
+# UNIXNU_GPU_ABI_DIR names another checkout). HOSTSIM_GPU passes through to the peer, which picks the reported GPU (a740 or a830).
+kit = abi_dir(ROOT)
 sim = kit / 'tests/hostsim'
 out = ROOT / 'build/turnip-darwin-host'
 out.mkdir(parents=True, exist_ok=True)
 smmu = ROOT / 'kits/ArmSmmu4K'
 library = ROOT / 'build/mesa-tu/src/freedreno/vulkan/libvulkan_freedreno.dylib'
+# The pinned Mesa's Vulkan headers (the ones Turnip is built with) after Homebrew's, so the host programs need no vulkan-headers package.
+VULKAN_INCLUDE = ROOT / '.cache/mesa-work/include'
 if not library.exists():
     sys.exit('Build the host Turnip first: python3 scripts/build-turnip-darwin.py --target host')
 
@@ -47,11 +52,17 @@ for name in ['NativeAdrenoMemory', 'NativeAdrenoSmmuMemory', 'NativeAdrenoVm', '
     core.append(obj)
 shim_obj = out / 'host_iokit_shim.o'
 subprocess.run(['xcrun', 'clang++', '-std=c++17', '-O1', '-fPIC', '-c', sim / 'host_iokit_shim.cpp', '-o', shim_obj], check=True)
+# Kernel KPIs the user-client code calls that the peer does not define (proc_selfpid, for the import bookkeeping); weak, so a peer that
+# defines one wins.
+kpi = out / 'host_kpi.c'
+kpi.write_text('#include <unistd.h>\n__attribute__((weak)) int proc_selfpid(void) { return getpid(); }\n')
+kpi_obj = out / 'host_kpi.o'
+subprocess.run(['xcrun', 'clang', '-std=c11', '-O1', '-fPIC', '-c', kpi, '-o', kpi_obj], check=True)
 shim = out / 'libhostiokit.dylib'
-subprocess.run(['xcrun', 'clang++', '-dynamiclib', '-o', shim, service, shim_obj, *core, *objects,
+subprocess.run(['xcrun', 'clang++', '-dynamiclib', '-o', shim, service, shim_obj, kpi_obj, *core, *objects,
                 '-framework', 'IOKit', '-framework', 'CoreFoundation'], check=True)
 smoke = out / 'vulkan_smoke'
-subprocess.run(['xcrun', 'clang', '-std=c11', '-O1', '-I', '/opt/homebrew/include', sim / 'vulkan_smoke.c', '-o', smoke,
+subprocess.run(['xcrun', 'clang', '-std=c11', '-O1', '-I', '/opt/homebrew/include', '-I', VULKAN_INCLUDE, sim / 'vulkan_smoke.c', '-o', smoke,
                 '-Wl,-rpath,' + str(out)], check=True)
 
 plugin_smoke = out / 'plugin_smoke'
@@ -73,7 +84,7 @@ if result.returncode or 'PASS' not in result.stdout:
 # and preserve ownership on failures. This exercises real transport code, not pixels.
 deferred = out / 'deferred_bo'
 subprocess.run(['xcrun', 'clang++', '-std=c++23', '-O1', '-Wall', '-Wextra', '-Werror', '-Wno-unused-parameter',
-                '-I', '/opt/homebrew/include', '-I', kit, sim / 'deferred_bo.cpp', '-o', deferred], check=True)
+                '-I', '/opt/homebrew/include', '-I', VULKAN_INCLUDE, '-I', kit, sim / 'deferred_bo.cpp', '-o', deferred], check=True)
 deferred_env = dict(env, TU_DARWIN_RETIRE_TRACE='1')
 deferred_env.pop('HOSTSIM_FAIL_USER_UNMAP', None)
 for mode in ['normal', 'busy', 'fence-error', 'free-error', 'lease-error', 'view-error', 'map-cleanup-error', 'pressure']:

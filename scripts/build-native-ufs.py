@@ -25,7 +25,9 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     obj = output / (args.component + '.o')
     command = compile_command(record, root / 'drivers' / args.component / (args.component + '.cpp'), obj)
-    command += ['-DNATIVE_UFS_SM8750=1', '-DUFS_ROOT_PARTITION=\"unixnu\"', '-DNATIVE_UFS_READ_ONLY=1',
+    # Read-only but for the diagnostic log: NATIVE_UFS_LOG_WRITES=1 lets the log window of the unixnu partition (sheng-log=1) open and
+    # its WRITE(10) and SYNCHRONIZE CACHE(10) pass; every other write command, and the Data store's window, stay refused.
+    command += ['-DNATIVE_UFS_SM8750=1', '-DUFS_ROOT_PARTITION=\"unixnu\"', '-DNATIVE_UFS_READ_ONLY=1', '-DNATIVE_UFS_LOG_WRITES=1',
                 '-Wno-unused-function']
     if args.root_windows:
         command += ['-I', str(root / 'build/storage-abi/include'),

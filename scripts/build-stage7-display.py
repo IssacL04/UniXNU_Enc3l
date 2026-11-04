@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import runpy
 import struct
 import subprocess
 import sys
@@ -211,6 +212,31 @@ for component in ('Stage7Probe','NativeKeyStoreEvents','NativeGOPPresenter'):
                 component+' late registration leaves instructions unchanged')
         objects.append(staged)
     else:objects.append(source_obj)
+# The GPU scanout hand-off presenter (sheng-fb-gpu=1, ARCHITECTURE 5.3.2) and the display processor access (DpuProbe: probe rows, TE lock
+# and page flips), both from drivers/NativeMobileDisplay, compiled with the kernel's own recipe and Stage 7's warning policy. The presenter's
+# two metaclasses are registered late by Stage7Probe, so its static initializer is globalized like the display's.
+record=json.loads((ROOT/'build/xnu/ios-obj/DEVELOPMENT_ARM64_BCM2837/iokit/DEVELOPMENT/IOPlatformExpert.cpo.json').read_text().strip().rstrip(','))
+compile_command=runpy.run_path(str(ROOT/'scripts/build-arm-platform.py'))['compile_command']
+def display_object(name):
+    source=ROOT/'drivers/NativeMobileDisplay'/(name+'.cpp');obj=OUT/(name+'.o')
+    arguments=iter(compile_command(record,source,obj));command=[]
+    for value in arguments:
+        if value=='-Xclang':
+            option=next(arguments)
+            if not option.startswith('-W'):command+=[value,option]
+        elif not value.startswith('-W'):command.append(value)
+    command+=['-mgeneral-regs-only','-Wall','-Wextra','-Werror','-Wno-unused-parameter','-Wno-c99-designator','-Wno-reorder-init-list',
+              '-Wno-deprecated-enum-enum-conversion','-I',OUT,'-I',ROOT/'.cache/xnu-work/osfmk']
+    subprocess.run([str(x) for x in command],cwd=record['directory'],check=True,timeout=90)
+    return obj
+presenter=display_object('NativeGOPPresenter');presenter_late=OUT/'NativeGOPPresenter.late.o'
+run([llvm/'llvm-objcopy','--remove-section=__DATA,__mod_init_func','--globalize-symbol=__GLOBAL__sub_I_NativeGOPPresenter.cpp',presenter,presenter_late])
+require(code(presenter.read_bytes(),macho(presenter.read_bytes()))==code(presenter_late.read_bytes(),macho(presenter_late.read_bytes())),
+        'Presenter instructions unchanged by late init staging')
+dpu=display_object('DpuProbe')
+require(not any(s['name']=='__mod_init_func' for g in macho(dpu.read_bytes())['segments'] for s in g['sections']),
+        'DpuProbe has no static initializer')
+objects+=[presenter_late,dpu]
 print(run(['python3',ROOT/'scripts/build-pagani-peripherals.py','--kernelcache',args.kernelcache],text=True),end='')
 peripherals=ROOT/'build/pagani-peripherals'
 objects += [peripherals/name for name in ('PaganiInput.late.o','PaganiPanel.late.o','PaganiS3910.o','PaganiGeniSpi.o','peripheral-bindings.o')]
@@ -218,8 +244,9 @@ archive=OUT/'libNativeLegacyDisplay.late.a';archive.unlink(missing_ok=True)
 run(['xcrun','ar','rcs',archive,*objects])
 sources=[ROOT/'drivers/NativeMobileDisplay/NativeLegacyDisplay.cpp',
          ROOT/'drivers/NativeMobileDisplay/NativeLegacyRequest.h',
-         ROOT/'drivers/NativeMobileDisplay/NativeGOPPresenter.cpp',
-         ROOT/'drivers/NativeMobileDisplay/NativeGOPWire.h',
+         *(ROOT/'drivers/NativeMobileDisplay'/name for name in ('NativeLegacySourceCache.h','NativeDisplayTiming.h','NativeScanoutFlip.h',
+           'NativeDpu.h','NativeDpuRows.h','DpuProbe.cpp','NativeGOPPresenter.cpp','NativeGOPWire.h','NativeGOPMappingCache.h')),
+         ROOT/'drivers/BootProgress/PeripheralStatus.h',
          ROOT/'drivers/NativeKeyStoreEvents/NativeKeyStoreEvents.cpp',
          ROOT/'drivers/Stage7Probe/Stage7Probe.cpp',Path(__file__),
          ROOT/'scripts/build-stage7-driver.py',ROOT/'scripts/original_stage7.py',ROOT/'scripts/audit-stage7-display.py']

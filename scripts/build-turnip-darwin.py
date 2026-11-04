@@ -13,13 +13,18 @@ import shutil
 import subprocess
 import sys
 from mesa_patch_identity import validate_recorded_patches
+from gpu_abi import abi_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--target', choices=('host', 'ios', 'ios27'), default='host')
 parser.add_argument('--configure-only', action='store_true')
 parser.add_argument('--builtin-pack', type=Path, help='Embed an exact-source/profile/GPU-bound own builtin pack; no runtime compiler fallback')
+# The kernel driver whose NativeAdrenoABI.h the darwin backend is built against (scripts/gpu_abi.py: drivers/Adreno830 when present, else
+# drivers/Adreno740; the A830 driver keeps the A740 wire ABI). UNIXNU_GPU_ABI_DIR or --abi-dir name another checkout.
+parser.add_argument('--abi-dir', type=Path)
 args = parser.parse_args()
+ABI_DIR = abi_dir(ROOT, args.abi_dir)
 SOURCE = ROOT / '.cache/mesa-work'
 OUT = ROOT / {'host': 'build/mesa-tu', 'ios': 'build/mesa-tu-ios', 'ios27': 'build/mesa-tu-ios27'}[args.target]
 LOGS = ROOT / '.cache'
@@ -39,7 +44,7 @@ if not shutil.which('glslangValidator'):
 env = {k: v for k, v in os.environ.items() if not k.startswith(('IR3_', 'FD_MESA_', 'NIR_', 'MESA_SHADER_', 'TU_'))}
 env['PATH'] = str(ROOT / '.cache/mesa-tools/bin') + ':' + str(ROOT / '.cache/mesa-venv/bin') + ':' + env['PATH']
 options = ['-Dgallium-drivers=', '-Dvulkan-drivers=freedreno', '-Dfreedreno-kmds=darwin',
-           '-Dtu-darwin-abi-dir=' + str(ROOT / 'drivers/Adreno740'), '-Dplatforms=macos', '-Dglx=disabled',
+           '-Dtu-darwin-abi-dir=' + str(ABI_DIR), '-Dplatforms=macos', '-Dglx=disabled',
            '-Degl=disabled', '-Dgbm=disabled', '-Dopengl=false', '-Dgles1=disabled', '-Dgles2=disabled',
            '-Dllvm=disabled', '-Dshared-glapi=disabled', '-Dxmlconfig=disabled', '-Dshader-cache=disabled',
            '-Dtools=', '-Dbuild-tests=false', '-Dvideo-codecs=', '-Dvulkan-layers=']
