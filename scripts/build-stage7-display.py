@@ -226,7 +226,7 @@ def display_object(name):
             if not option.startswith('-W'):command+=[value,option]
         elif not value.startswith('-W'):command.append(value)
     command+=['-mgeneral-regs-only','-Wall','-Wextra','-Werror','-Wno-unused-parameter','-Wno-c99-designator','-Wno-reorder-init-list',
-              '-Wno-deprecated-enum-enum-conversion','-I',OUT,'-I',ROOT/'.cache/xnu-work/osfmk']
+              '-Wno-deprecated-enum-enum-conversion','-Wno-unnecessary-virtual-specifier','-I',OUT,'-I',ROOT/'.cache/xnu-work/osfmk']
     subprocess.run([str(x) for x in command],cwd=record['directory'],check=True,timeout=90)
     return obj
 presenter=display_object('NativeGOPPresenter');presenter_late=OUT/'NativeGOPPresenter.late.o'

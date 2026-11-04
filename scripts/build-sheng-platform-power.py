@@ -68,7 +68,7 @@ while i < len(arguments):
         command.append(arg)
     i += 1
 command += ['-mgeneral-regs-only', '-Wall', '-Wextra', '-Werror', '-Wno-unused-parameter', '-Wno-c99-designator',
-            '-Wno-reorder-init-list', '-Wno-deprecated-enum-enum-conversion',
+            '-Wno-reorder-init-list', '-Wno-deprecated-enum-enum-conversion', '-Wno-unnecessary-virtual-specifier',
             '-I', OUT, '-I', ROOT / '.cache/xnu-work/osfmk']
 run(command, cwd=record['directory'])
 raw = obj.read_bytes()

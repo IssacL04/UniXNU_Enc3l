@@ -49,7 +49,7 @@ for value in arguments:
 if source.suffix == '.c':
     command=c_command(command)
 command += ['-mgeneral-regs-only', '-Wall', '-Wextra', '-Werror', '-Wno-unused-parameter',
-            '-Wno-c99-designator', '-Wno-reorder-init-list', '-Wno-deprecated-enum-enum-conversion',
+            '-Wno-c99-designator', '-Wno-reorder-init-list', '-Wno-deprecated-enum-enum-conversion', '-Wno-unnecessary-virtual-specifier',
             '-I', str(directory), '-I', str(root / '.cache/xnu-work/osfmk')]
 if component.startswith('Pagani'):
     command += ['-I', str(root / 'kits/Sm8750Platform'), '-I', str(root / 'kits/oneplus13t'),
